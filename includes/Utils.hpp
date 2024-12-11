@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <netinet/in.h>
+#include <poll.h>
 
 int	ErrorMngment(std::string msg);
 

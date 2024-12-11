@@ -1,37 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.cpp                                         :+:      :+:    :+:   */
+/*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/11 14:21:18 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/11 15:29:06 by tsoloher         ###   ########.fr       */
+/*   Created: 2024/12/11 15:33:05 by tsoloher          #+#    #+#             */
+/*   Updated: 2024/12/11 15:33:54 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Client.hpp"
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
+
+#include "Utils.hpp"
 
 
-Client::Client()
-{
-    _socket = -1;
-    _password = false;
-}
 
-Client::~Client()
-{
-    if (_socket != -1)
-        close(_socket);
-}
 
-void Client::StopClient()
-{
-    if (_socket != -1)
-        close(_socket);
-    _nickname = "";
-    _username = "";
-    _socket = -1;
-    _password = false;
-}
+
+
+
+#endif
 

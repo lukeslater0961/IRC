@@ -10,13 +10,15 @@ class Server{
 		void	SetPassword(std::string password);
 
 		std::string GetPassword();
-		int GetPort();
+		int			GetPort();
+		int	SetupServer(char **argv);
+
 	private:
 		std::string _password;
+		bool 		_goodPassword;
 		int			_port;
 };
 
-int	SetupServer(char **argv);
 void	StartServer(Server server);
 #endif
 
