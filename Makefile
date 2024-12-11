@@ -2,7 +2,13 @@ PROG_NAME = ircserv
 CC = c++
 FLAGS = -Werror -Wextra -Wall -std=c++98
 
-SRCS = src/main.cpp
+SRCS = src/main.cpp \
+		src/Client.cpp\
+		src/Commands.cpp\
+		src/Server.cpp\
+		src/Utils.cpp
+
+
 
 OBJS = $(SRCS:.cpp=.o)
 
