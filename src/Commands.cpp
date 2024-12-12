@@ -41,3 +41,22 @@ void	CheckPass(std::string buffer, int index, Client *client, Server server)
 		}
 	}
 }
+
+void CheckNickname(std::string buffer)
+{
+	std::string nickname;
+	int i = 0;
+
+	while (buffer[++i] != ' ' && buffer[i] != '\0' && buffer[i] != '\n')
+		nickname += buffer[i];
+	nickname[i] = '\0';
+	if (buffer[i] != '\n' && buffer[i] != '\0')
+	{
+		std::cout << "nickname is incorrect" << std::endl;
+		return;
+	}
+	else
+	{
+		std::cout << "nickname is correct" << std::endl;
+	}
+}

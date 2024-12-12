@@ -93,13 +93,16 @@ void StartServer(Server server)
 
     struct pollfd fds[MAX_CLIENTS];
     int nfds = 1;
-
+    
     fds[0].fd = serverSocket;    // Server socket
     fds[0].events = POLLIN;      // Monitor for incoming connections
 
     for (int i = 1; i < MAX_CLIENTS; i++)
+       {
+        fds[i].revents = 0;          // Initialize client slots as unused
         fds[i].fd = -1;          // Initialize client slots as unused
-
+       }
+    
     char buffer[BUFFER_SIZE];
 
     while (true)
@@ -140,7 +143,7 @@ void StartServer(Server server)
                 }
             }
         }
-
+        
         // Check for events on existing client sockets
         for (int i = 1; i < nfds; i++)
         {

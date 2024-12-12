@@ -1,6 +1,6 @@
 PROG_NAME = ircserv
 CC = c++
-FLAGS = -Werror -Wextra -Wall -std=c++98
+FLAGS =  -g -Werror -Wextra -Wall -std=c++98
 
 SRCS = src/main.cpp \
 		src/Client.cpp\

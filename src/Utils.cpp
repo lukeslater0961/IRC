@@ -10,7 +10,6 @@ int	ErrorMngment(std::string msg)
 
 void	LoginCommands(std::string buffer, Client *client, Server server)
 {
-	std::cout << "doing login commands" << std::endl;
 	int	i = -1;
 	size_t j = 0;
 	std::string token;
@@ -32,7 +31,7 @@ void	LoginCommands(std::string buffer, Client *client, Server server)
 			break;
 		case 2:
 			std::cout << "setting nick" << std::endl;
-			// setNickname(buffer);
+			CheckNickname(buffer);
 			break;
 		default:
 			break;
