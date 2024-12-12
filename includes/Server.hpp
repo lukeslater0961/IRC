@@ -19,6 +19,7 @@ class Server{
 		int			_port;
 };
 
+int SetupServer(char **argv);
 void	StartServer(Server server);
 #endif
 

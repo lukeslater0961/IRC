@@ -155,6 +155,7 @@ int SetupServer(char **argv)
 
 void StartServer(Server server)
 {
+	int opt = 1;
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
     if (serverSocket == -1)
@@ -168,6 +169,7 @@ void StartServer(Server server)
     server_address.sin_port = htons(server.GetPort());
     server_address.sin_addr.s_addr = INADDR_ANY;
 
+	setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     if (bind(serverSocket, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
     {
         perror("Bind failed");
@@ -184,7 +186,6 @@ void StartServer(Server server)
 
     std::cout << "Server listening on port " << server.GetPort() << std::endl;
 
-    // Set up poll structure
     struct pollfd fds[MAX_CLIENTS];
     int nfds = 1;
 
@@ -232,9 +233,6 @@ void StartServer(Server server)
                     break;
                 }
             }
-
-            // Send authentication message
-            send(clientSocket, AUTHENTICATE, sizeof(AUTHENTICATE), 0);
         }
 
         // Check for events on existing client sockets
@@ -248,28 +246,22 @@ void StartServer(Server server)
                 if (bytesReceived > 0)
                 {
                     buffer[bytesReceived] = '\0';
-                    std::cout << "Received from client: " << buffer << std::endl;
-
-                    // Echo message back to client
-                    std::string response = "Message received: " + std::string(buffer);
-                    send(clientSocket, response.c_str(), response.length(), 0);
+					ParseMessage(buffer);
                 }
                 else if (bytesReceived == 0)
                 {
-                    // Client disconnected
                     std::cout << "Client disconnected.\n";
                     close(clientSocket);
-                    fds[i].fd = -1; // Mark slot as available
+                    fds[i].fd = -1;
                 }
                 else
                 {
                     perror("Recv failed");
                     close(clientSocket);
-                    fds[i].fd = -1; // Mark slot as available
+                    fds[i].fd = -1;
                 }
             }
         }
     }
-
     close(serverSocket);
 }
