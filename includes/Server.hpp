@@ -21,5 +21,6 @@ class Server{
 
 int SetupServer(char **argv);
 void	StartServer(Server server);
+void	ParseMessage(std::string buffer, Server server);
 #endif
 

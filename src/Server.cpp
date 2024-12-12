@@ -246,7 +246,7 @@ void StartServer(Server server)
                 if (bytesReceived > 0)
                 {
                     buffer[bytesReceived] = '\0';
-					ParseMessage(buffer);
+					ParseMessage(buffer, server);
                 }
                 else if (bytesReceived == 0)
                 {

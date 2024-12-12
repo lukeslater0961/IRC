@@ -10,8 +10,7 @@
 #include <netinet/in.h>
 #include <poll.h>
 
-int	ErrorMngment(std::string msg);
-void	ParseMessage(std::string buffer);
+int		ErrorMngment(std::string msg);
 
 # define INVALID_ARGS "usage: ./ircserv <port> <password>"
 # define AUTHENTICATE "Welcome, to access the server please enter the password as follows: PASS <password>\n"

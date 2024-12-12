@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:21:21 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/11 15:28:02 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/12 12:04:39 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 class Client{
     public:
+
         Client();
         ~Client();
         void StopClient();
@@ -24,6 +25,7 @@ class Client{
         std::string getUsername(){return (this->_username);}
         void setNickname(std::string nickname){this->_nickname = nickname;};
         void setUsername(std::string username){this->_username = username;};
+
     private:
       std::string _nickname;
       std::string _username;
