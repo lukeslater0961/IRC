@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:21:21 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/12 15:17:32 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/12 16:42:40 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,12 @@
 #include "Utils.hpp"
 
 class Client{
+
     public:
 
         Client();
         ~Client();
+
         void StopClient();
         std::string getNickname(){return (this->_nickname);}
         std::string getUsername(){return (this->_username);}
@@ -29,6 +31,7 @@ class Client{
 		int 	GetSocket(){return this->_socket;}
 		bool    GetPassword(){return this->_password;};
         void   SetPassword(bool password){this->_password = password;};
+
     private:
       std::string _nickname;
       std::string _username;

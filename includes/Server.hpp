@@ -19,7 +19,7 @@ class Server{
 
 	private:
 		std::string _password;
-		std::vector<Client> client;
+		std::vector<Client *> client;
 		int			_port;
 };
 
