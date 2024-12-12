@@ -8,42 +8,66 @@ int	ErrorMngment(std::string msg)
 	return (1);
 }
 
-void	CheckPass(std::string buffer, int index, Server server)
+
+
+bool	CheckClientPass(int clientSocket, Client *client)
 {
-	std::string password;
-
-	while (buffer[++index] != ' ' && buffer[index] != '\0' && buffer[index] != '\n')
-		password += buffer[index];
-
-	password[index] = '\0';
-	std::cout << static_cast<int>(buffer[index]) << std::endl;
-	if (buffer[index] != '\n' && buffer[index] != '\0')
+	(void)clientSocket;
+	if (client)
 	{
-		std::cout << "password is incorrect" << std::endl;
-		return;
+		if (client->GetPassword())
+		{
+			//send message to client saying (password already set)
+			std::cout << "password already set" << std::endl;
+			return (true);
+		}
 	}
-	else
-	{
-		std::cout << server.GetPassword() << " " << password << std::endl;
-		if (!std::strcmp(password.c_str(), server.GetPassword().c_str()))
-			std::cout << "password is correct" << std::endl;
-		else
-			std::cout << "password is incorrect" << std::endl;
-			//set password true in client
-	}
-
+	return (false);
 }
 
-void	ParseMessage(std::string buffer, Server server)
+void	CheckPass(std::string buffer, int index, Server server, int clientSocket)
+{
+	std::string password;
+	Client *client = server.FindClient(clientSocket);
+
+	std::cout << &client << std::endl;
+	if (!CheckClientPass(clientSocket, client))
+	{
+		while (buffer[++index] != ' ' && buffer[index] != '\0' && buffer[index] != '\n')
+			password += buffer[index];
+
+		password[index] = '\0';
+		std::cout << static_cast<int>(buffer[index]) << std::endl;
+		if (buffer[index] != '\n' && buffer[index] != '\0')
+		{
+			std::cout << "password is incorrect" << std::endl;
+			return;
+		}
+		else
+		{
+			std::cout << server.GetPassword() << " " << password << std::endl;
+			if (!std::strcmp(password.c_str(), server.GetPassword().c_str()))
+			{
+				std::cout << "password is correct" << std::endl;
+				// client->SetPassword(true);
+			}
+			else
+				std::cout << "password is incorrect" << std::endl;
+				//set password true in client
+		}
+	}
+}
+
+void	ParseMessage(std::string buffer, Server server, int clientSocket)
 {
 	int	i = -1;
 	size_t j = 0;
 	std::string token;
 	std::string commands[] = {"PASS", "NICK"};
-
+	(void)server;
+	(void)clientSocket;
 	if (buffer.empty())
 		return ;
-
 	while (buffer[++i] != ' ' && buffer[i] != '\0')
 		token += buffer[i];
 	
@@ -54,11 +78,11 @@ void	ParseMessage(std::string buffer, Server server)
 	switch (j) {
 		case 1:
 			std::cout << "checking password" << std::endl;
-			CheckPass(buffer, i, server);
+			CheckPass(buffer, i, server, clientSocket);
 			break;
 		case 2:
 			std::cout << "setting nick" << std::endl;
-			//SetNick(buffer);
+			// setNickname(buffer);
 			break;
 		default:
 			break;

@@ -10,6 +10,9 @@
 #include <netinet/in.h>
 #include <poll.h>
 
+#define BUFFER_SIZE 1024
+#define MAX_CLIENTS 100
+
 int		ErrorMngment(std::string msg);
 
 # define INVALID_ARGS "usage: ./ircserv <port> <password>"
