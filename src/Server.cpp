@@ -1,6 +1,14 @@
 #include "../includes/Server.hpp"
 #include "../includes/Utils.hpp"
 #include <cctype>
+#include <csignal>
+#include <algorithm>
+
+
+static int serverSocket = -1;
+static Server *staticServer = NULL;
+
+
 
 Server::Server() {}
 
@@ -19,11 +27,43 @@ void Server::AddClient(int clientSocket)
     }
 }
 
+
+
+void signalHandler(int signal) {
+    if (signal == SIGINT) {
+        std::cout << "\nCtrl+C detected. Shutting down server gracefully..." << std::endl;
+
+        // Close server socket
+        if (serverSocket != -1) {
+            close(serverSocket);
+            std::cout << "Server socket closed." << std::endl;
+        }
+
+        // Clean up clients
+        if (staticServer) {
+			for (std::vector<Client*>::iterator it = staticServer->client.begin(); it != staticServer->client.end(); ++it) {
+				Client *client = *it;
+				if (client) {
+                    std::cout << "Cleaning up client with socket: " << client->GetSocket() << std::endl;
+                    close(client->GetSocket());
+                    delete client;
+                }
+            }
+        }
+
+        exit(0); // Exit the program
+    }
+}
 void	DeleteClient(int clientSocket, Server server)
 {
 	std::cout << "deleting client" << std::endl;
 	Client *client = server.FindClient(clientSocket);
-	delete(client);
+    if (client)
+    {
+        close(clientSocket);
+        server.client.erase(std::remove(server.client.begin(), server.client.end(), client), server.client.end());
+	    delete(client);
+    }
 }
 
 Client* Server::FindClient(int clientSocket)
@@ -33,7 +73,6 @@ Client* Server::FindClient(int clientSocket)
     {
         if ((*it)->GetSocket() == clientSocket)
         {
-            std::cout << "gfdgfg`" << std::endl;
             return (*it);
         }
     }
@@ -60,6 +99,9 @@ int SetupServer(char **argv)
 
 void StartServer(Server server)
 {
+    staticServer = &server; // Set the static Server instance
+    signal(SIGINT, signalHandler);
+
 	int opt = 1;
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 

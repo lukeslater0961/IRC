@@ -6,5 +6,5 @@
 #include "Utils.hpp"
 
 void	CheckPass(std::string buffer, int index, Client *client, Server server);
-void    CheckNickname(std::string buffer);
+void    CheckNickname(std::string buffer, Client *client, Server *server);
 #endif

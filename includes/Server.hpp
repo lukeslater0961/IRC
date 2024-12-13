@@ -4,6 +4,8 @@
 #include "Utils.hpp"
 #include "Client.hpp"
 #include <vector>
+#include <csignal>
+
 
 class Server{
 	public:
@@ -17,9 +19,9 @@ class Server{
 		void AddClient(int clientSocket);
 		Client* FindClient(int clientSocket);
 
+		std::vector<Client *> client;
 	private:
 		std::string _password;
-		std::vector<Client *> client;
 		int			_port;
 };
 

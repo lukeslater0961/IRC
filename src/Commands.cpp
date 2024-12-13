@@ -18,6 +18,7 @@ void	CheckPass(std::string buffer, int index, Client *client, Server server)
 {
 	std::string password;
 
+	std::cout << "checking password" << std::endl;
 	if (!CheckClientPass(client))
 	{
 		while (buffer[++index] != ' ' && buffer[index] != '\0' && buffer[index] != '\n')
@@ -42,21 +43,19 @@ void	CheckPass(std::string buffer, int index, Client *client, Server server)
 	}
 }
 
-void CheckNickname(std::string buffer)
+void CheckNickname(std::string buffer, Client *client, Server *server)
 {
-	std::string nickname;
-	int i = 0;
-
-	while (buffer[++i] != ' ' && buffer[i] != '\0' && buffer[i] != '\n')
-		nickname += buffer[i];
-	nickname[i] = '\0';
-	if (buffer[i] != '\n' && buffer[i] != '\0')
+	
+	for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
 	{
-		std::cout << "nickname is incorrect" << std::endl;
-		return;
+		if ((*it)->getNickname() == buffer)
+		{
+			//send message to client saying (nickname already taken)
+			std::cout << "nickname already taken" << std::endl;
+			return;
+		}
 	}
-	else
-	{
-		std::cout << "nickname is correct" << std::endl;
-	}
+	client->setNickname(buffer);
+	std::cout << "nickname set" << std::endl;
+	
 }
