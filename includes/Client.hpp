@@ -6,15 +6,24 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:21:21 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/13 16:13:14 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/14 13:58:37 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include "Utils.hpp"
 
+#include <string>
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <cstdio>
+#include <cstdlib>
+#include <netinet/in.h>
+#include <poll.h>
+#include <cstring>
 class Client{
 
 	public:

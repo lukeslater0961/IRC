@@ -8,8 +8,6 @@
 static int serverSocket = -1;
 static Server *staticServer = NULL;
 
-
-
 Server::Server() {}
 
 void Server::AddClient(int clientSocket)
@@ -27,19 +25,16 @@ void Server::AddClient(int clientSocket)
     }
 }
 
-
-
-void signalHandler(int signal) {
+void signalHandler(int signal)
+{
     if (signal == SIGINT) {
         std::cout << "\nCtrl+C detected. Shutting down server gracefully..." << std::endl;
 
-        // Close server socket
         if (serverSocket != -1) {
             close(serverSocket);
             std::cout << "Server socket closed." << std::endl;
         }
 
-        // Clean up clients
         if (staticServer) {
 			for (std::vector<Client*>::iterator it = staticServer->client.begin(); it != staticServer->client.end(); ++it) {
 				Client *client = *it;
@@ -50,10 +45,10 @@ void signalHandler(int signal) {
                 }
             }
         }
-
-        exit(0); // Exit the program
+        exit(0);
     }
 }
+
 void	DeleteClient(int clientSocket, Server server)
 {
 	std::cout << "deleting client" << std::endl;
@@ -72,13 +67,10 @@ Client* Server::FindClient(int clientSocket)
     for (it = this->client.begin(); it != this->client.end(); it++)
     {
         if ((*it)->GetSocket() == clientSocket)
-        {
             return (*it);
-        }
     }
     return NULL;
 }
-
 
 int SetupServer(char **argv)
 {
@@ -99,7 +91,7 @@ int SetupServer(char **argv)
 
 void StartServer(Server server)
 {
-    staticServer = &server; // Set the static Server instance
+    staticServer = &server;
     signal(SIGINT, signalHandler);
 
 	int opt = 1;

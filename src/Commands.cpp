@@ -1,4 +1,7 @@
 #include "../includes/Commands.hpp"
+#include "../includes/Server.hpp"
+#include <sys/socket.h>
+#include <algorithm>
 
 bool	CheckClientPass(Client *client)
 {
@@ -6,7 +9,7 @@ bool	CheckClientPass(Client *client)
 	{
 		if (client->GetPassword())
 		{
-			//send message to client saying (password already set)
+			SendErrorMsg("PASS ", , client);
 			std::cout << "password already set" << std::endl;
 			return (true);
 		}
@@ -18,7 +21,6 @@ void	CheckPass(std::string buffer, int index, Client *client, Server server)
 {
 	std::string password;
 
-	std::cout << "checking password" << std::endl;
 	if (!CheckClientPass(client))
 	{
 		while (buffer[++index] != ' ' && buffer[index] != '\0' && buffer[index] != '\n')
@@ -45,7 +47,17 @@ void	CheckPass(std::string buffer, int index, Client *client, Server server)
 
 void CheckNickname(std::string buffer, Client *client, Server *server)
 {
-	
+	std::string invChars[] = {" ", ":", ",", "*", "@", "!", "."};
+
+	for (size_t i = 0; i < sizeof(invChars)/sizeof(invChars[0]); ++i)
+	{
+		if (buffer.find(invChars[i]) != std::string::npos)		
+		{
+			send(client->GetSocket(), NON_NICK, sizeof(NON_NICK), MSG_EOR);
+			return;
+		}
+	}
+
 	for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
 	{
 		if ((*it)->getNickname() == buffer)
