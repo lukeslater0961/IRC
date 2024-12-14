@@ -51,8 +51,8 @@ void signalHandler(int signal)
 
 void	DeleteClient(int clientSocket, Server server)
 {
-	std::cout << "deleting client" << std::endl;
 	Client *client = server.FindClient(clientSocket);
+
     if (client)
     {
         close(clientSocket);

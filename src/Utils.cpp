@@ -2,6 +2,20 @@
 #include "../includes/Server.hpp"
 #include "../includes/Commands.hpp"
 #include <sys/socket.h>
+#include <sstream>
+
+std::vector<std::string> split(const std::string& str, char delimiter)
+{
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string token;
+
+    while (std::getline(ss, token, delimiter)) {
+        result.push_back(token);
+    }
+
+    return result;
+}
 
 void	SendErrorMsg(std::string prefix, std::string errorType, Client *client)
 {
@@ -25,7 +39,7 @@ void LoginCommands(std::string buffer, Client *client, Server server)
     if (buffer.empty())
         return;
 
-    while (i < buffer.size() && buffer[i] != ' ')
+    while (i < buffer.size() && buffer[i] != ' ' && buffer[i] != '\n')
         token += buffer[i++];
     for (; j < sizeof(commands) / sizeof(commands[0]); j++) {
         if (token == commands[j]) {
@@ -35,18 +49,17 @@ void LoginCommands(std::string buffer, Client *client, Server server)
 
     switch (j) {
         case 0:
-            std::cout << "checking password" << std::endl;
-            CheckPass(buffer, i, client, server);
+            CheckPass(buffer, i , client, &server);
             break;
         case 1:
             CheckNickname(&buffer[i + 1], client, &server);
             break;
         case 2:
             std::cout << "processing user command" << std::endl;
-            // Add USER command handling here if needed
+			SetUsername(&buffer[i + 1], client);
             break;
         default:
-            std::cerr << "Unknown command: " << token << std::endl;
+			SendErrorMsg("421 " + token, UNKNOWN_CMD, client);
             break;
     }
 }
