@@ -67,15 +67,67 @@ void LoginCommands(std::string buffer, Client *client, Server server)
 
 void	DoCommands(std::string buffer, Client *client, Server server)
 {
-	(void)server;
-	(void)buffer;
-	(void)client;
-	std::cout << "doing normal comamnds"<< std::endl;
+    (void)buffer;
+    (void)client;
+    (void)server;
+	// std::cout << "doing normal commands" << std::endl;
+    // std::vector<std::string> tokens = split(buffer, ' ');
+
+    // if (tokens.empty()) {
+    //     SendErrorMsg("421", "No command given", client);
+    //     return;
+    // }
+
+    // std::string command = tokens[0];
+
+    // if (command == "KICK") {
+    //     if (tokens.size() < 3) {
+    //         SendErrorMsg("461", "KICK :Not enough parameters", client);
+    //         return;
+    //     }
+    //     std::string channel = tokens[1];
+    //     std::string user = tokens[2];
+    //     KickCommand(server, channel, user, client);
+    // } else if (command == "MODE") {
+    //     if (tokens.size() < 3) {
+    //         SendErrorMsg("461", "MODE :Not enough parameters", client);
+    //         return;
+    //     }
+
+    //     std::string target = tokens[1];
+    //     std::string mode = tokens[2];
+    //     std::string param = (tokens.size() > 3) ? tokens[3] : "";
+
+    //     // Call the ModeCommand handler with the parsed arguments
+    //     ModeCommand(server, client, target, mode, param);
+    // } else if (command == "TOPIC") {
+    //     if (tokens.size() < 2) {
+    //         SendErrorMsg("461", "TOPIC :Not enough parameters", client);
+    //         return;
+    //     }
+    //     std::string channel = tokens[1];
+    //     std::string topic = tokens.size() > 2 ? tokens[2] : "";
+    //     TopicCommand(server, channel, topic, client);
+    // } else if (command == "INVITE") {
+    //     if (tokens.size() < 3) {
+    //         SendErrorMsg("461", "INVITE :Not enough parameters", client);
+    //         return;
+    //     }
+    //     std::string user = tokens[1];
+    //     std::string channel = tokens[2];
+    //     InviteCommand(server, user, channel, client);
+    // } else {
+    //     SendErrorMsg("421 " + command, "Unknown command", client);
+    // }
 }
 
 void	ParseMessage(std::string buffer, Server server, int clientSocket)
 {
 	Client *client = server.FindClient(clientSocket);
+    if (!client){
+        std::cerr << "Client not found for socket: " << clientSocket << std::endl;
+        return;
+    }
 	if (!client->GetPassword() || client->getNickname().empty() || client->getUsername().empty())
 		LoginCommands(buffer, client, server);
 	else 

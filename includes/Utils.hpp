@@ -12,6 +12,7 @@
 #include <cstring>
 #include "Client.hpp"
 #include <vector>
+#include <map>
 
 #define BUFFER_SIZE 1024
 #define MAX_CLIENTS 100

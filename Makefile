@@ -6,7 +6,8 @@ SRCS = src/main.cpp \
 		src/Client.cpp\
 		src/Commands.cpp\
 		src/Server.cpp\
-		src/Utils.cpp
+		src/Utils.cpp \
+		src/Channel.cpp \
 
 
 
