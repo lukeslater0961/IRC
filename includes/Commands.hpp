@@ -13,5 +13,6 @@ void    InviteCommand(Server &server, const std::string &channelName, Client *op
 void    TopicCommand(Server &server, const std::string &channelName, Client *operatorClient, const std::string &newTopic);
 void    ModeCommand(Server &server, Client *operatorClient, const std::string &channelName, const std::string &mode, const std::string &param = "");
 void	JoinChannel(std::vector<std::string> tokens, Server *server, Client *client);
+void	Broadcast(std::vector<std::string> tokens, Server *server, Client *client);
 
 #endif

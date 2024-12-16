@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:21:21 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/16 13:03:18 by lslater          ###   ########.fr       */
+/*   Updated: 2024/12/16 14:11:51 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <netinet/in.h>
 #include <poll.h>
 #include <cstring>
+
 class Client{
 
 	public:

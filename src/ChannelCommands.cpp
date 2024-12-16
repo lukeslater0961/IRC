@@ -27,7 +27,6 @@ void	JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
 			}
 			else
 			{
-				std::cout << "hello" << std::endl;
 				channel->AddMember(client);
 				client->SetCurrentChannel(tokens[1]);
 				send(client->GetSocket(), message.c_str(), message.size(),  MSG_EOR);

@@ -22,7 +22,6 @@ std::vector<std::string> split(const std::string& str, char delimiter)
 void	SendErrorMsg(std::string prefix, std::string errorType, Client *client)
 {
 	std::string errormsg = prefix + ':' + errorType;
-	std::cout << client->GetSocket() << std::endl;
 	send(client->GetSocket(), errormsg.c_str(), errormsg.size(), MSG_EOR);
 }
 
@@ -64,23 +63,26 @@ void LoginCommands(std::string buffer, Client *client, Server *server)
 	{
 		std::string command_line = it->data();
 		command_line = command_line.substr(0, command_line.find('\r'));
+		std::cout << command_line << std::endl;
 		std::vector<std::string> tokens = split(command_line, ' ');
-		std::string tokens2 = command_line.substr(0, command_line.find(' '));
 		
+		std::cout << tokens[0] << std::endl;
 		for (; j < sizeof(commands) / sizeof(commands[0]); j++)
 		{
-			if (std::strcmp(tokens2.c_str(), commands[j].c_str()))
+			std::cout << commands[j] << " " + tokens[0] << std::endl;
+			if (!std::strcmp(tokens[0].c_str(), commands[j].c_str()))
 				break;
 		}
 		
+		std::cout << j <<std::endl;
 		switch (j) {
-			case 1:
+			case 0:
 				CheckPass(tokens, client, server);
 				break;
-			case 2:
+			case 1:
 				CheckNickname(tokens, client, server);
 				break;
-			case 3:
+			case 2:
 				SetUsername(tokens, client);
 				break;
 			default:
@@ -92,7 +94,6 @@ void LoginCommands(std::string buffer, Client *client, Server *server)
 
 void	DoCommands(std::string buffer, Client *client, Server *server)
 {
-	std::cout << "normal commands" << std::endl;
 	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "PRIVMSG"};
     std::vector<std::string> tokens = split(buffer, ' ');
 	size_t i = 0;
@@ -105,8 +106,6 @@ void	DoCommands(std::string buffer, Client *client, Server *server)
 		if (!std::strcmp(tokens[0].c_str(), commands[i].c_str()))
 			break;
 	}
-		
-	std::cout << i << std::endl;
 
 	switch (i) {
         case 0:
@@ -128,6 +127,7 @@ void	DoCommands(std::string buffer, Client *client, Server *server)
 				SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
 			else
 				SendErrorMsg(tokens[0], UNKNOWN_CMD, client);
+
 	}
     // std::string command = tokens[0];
 

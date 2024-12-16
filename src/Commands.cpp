@@ -5,6 +5,26 @@
 #include "../includes/Channel.hpp"
 #include <sys/socket.h>
 
+void	Broadcast(std::vector<std::string> tokens, Server *server, Client *client)
+{
+	if (tokens.size() == 1)
+		return ;
+	else if (tokens.size() == 3)
+	{
+		if (tokens[1][0] == '#')
+			BroadcastToChannel(tokens, client, server);
+		else
+		{
+			for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
+			{
+				if ((*it)->getNickname() == tokens[1])
+					send((*it)->GetSocket(), tokens[2].c_str(), tokens[2].size(), MSG_EOR);
+			}
+		}
+	}
+}
+
+
 void	SetUsername(std::vector<std::string> tokens, Client *client)
 {
 	if (tokens.size() == 1)
@@ -32,7 +52,6 @@ bool	CheckClientPass(Client *client)
 void	CheckPass(std::vector<std::string> tokens, Client *client, Server *server)
 {
 	std::string password;
-
 	if (!CheckClientPass(client))
 	{
 		if (tokens.size() == 1)

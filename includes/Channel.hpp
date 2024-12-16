@@ -6,15 +6,27 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 15:33:05 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/16 13:10:38 by lslater          ###   ########.fr       */
+/*   Updated: 2024/12/16 14:11:31 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-#include "Utils.hpp"
-
+#include "Client.hpp"
+#include <string>
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <cstdio>
+#include <cstdlib>
+#include <netinet/in.h>
+#include <poll.h>
+#include <cstring>
+#include "Client.hpp"
+#include <vector>
+#include <map>
 class Channel
 {
     public:
@@ -45,7 +57,7 @@ class Channel
     
         bool isTopicRestricted() const { return _topicRestriction;};    
 
-        std::string getName() const {return _name;};
+        std::string getName() const {return this->_name;};
 		std::map<std::string, Client *> GetMembers(void){return (this->_members);}
     
     private :
