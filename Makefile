@@ -8,6 +8,7 @@ SRCS = src/main.cpp \
 		src/Server.cpp\
 		src/Utils.cpp \
 		src/Channel.cpp \
+		src/ChannelCommands.cpp
 
 
 

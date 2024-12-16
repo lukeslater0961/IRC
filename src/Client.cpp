@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:21:18 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/13 15:25:27 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/16 12:49:04 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ Client::Client()
 {
     _socket = -1;
     _password = false;
+	inChannel = false;
 }
 
 Client::~Client()

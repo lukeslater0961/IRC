@@ -11,6 +11,8 @@ std::vector<std::string> split(const std::string& str, char delimiter)
     std::string token;
 
     while (std::getline(ss, token, delimiter)) {
+        if (!token.empty() && token[token.size() - 1] == '\n')
+            token.erase(token.size() - 1);
         result.push_back(token);
     }
 
@@ -29,9 +31,25 @@ int	ErrorMngment(std::string msg)
 	return (1);
 }
 
-void LoginCommands(std::string buffer, Client *client, Server server)
+void	BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server *server)
 {
-    size_t i = 0;
+	Channel *channel = server->GetChannel(client->GetCurrentChannel());
+	std::map<std::string, Client *> members = channel->GetMembers();
+	std::string msg = '\r' + client->getNickname() + ": ";
+
+	for(size_t i = 0; i < tokens.size(); i++)
+		msg += tokens[i];
+
+	msg += '\n';
+    for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
+    {
+        if (it->second != client)
+			send(it->second->GetSocket(), msg.c_str(), msg.size(), MSG_EOR);
+    }
+}
+
+void LoginCommands(std::string buffer, Client *client, Server *server)
+{
 	size_t j = 0;
     std::string token;
     std::string commands[] = {"PASS", "NICK", "USER"};
@@ -39,45 +57,62 @@ void LoginCommands(std::string buffer, Client *client, Server server)
     if (buffer.empty())
         return;
 
-    while (i < buffer.size() && buffer[i] != ' ' && buffer[i] != '\n')
-        token += buffer[i++];
+    std::vector<std::string> tokens = split(buffer, ' ');
     for (; j < sizeof(commands) / sizeof(commands[0]); j++) {
-        if (token == commands[j]) {
+        if (!std::strcmp(tokens[0].c_str(), commands[j].c_str()))
             break;
-        }
     }
-
     switch (j) {
         case 0:
-            CheckPass(buffer, i , client, &server);
+            CheckPass(tokens, client, server);
             break;
         case 1:
-            CheckNickname(&buffer[i + 1], client, &server);
+            CheckNickname(tokens, client, server);
             break;
         case 2:
-            std::cout << "processing user command" << std::endl;
-			SetUsername(&buffer[i + 1], client);
+			SetUsername(tokens, client);
             break;
         default:
-			SendErrorMsg("421 " + token, UNKNOWN_CMD, client);
+			SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
             break;
     }
 }
 
-
-void	DoCommands(std::string buffer, Client *client, Server server)
+void	DoCommands(std::string buffer, Client *client, Server *server)
 {
-    (void)buffer;
-    (void)client;
-    (void)server;
-	// std::cout << "doing normal commands" << std::endl;
-    // std::vector<std::string> tokens = split(buffer, ' ');
+	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN"};
+    std::vector<std::string> tokens = split(buffer, ' ');
+	size_t i = 0;
 
-    // if (tokens.empty()) {
-    //     SendErrorMsg("421", "No command given", client);
-    //     return;
-    // }
+    if (tokens.empty())
+		return;
 
+	for(; i < sizeof(commands)/sizeof(commands[0]); i++)
+	{
+		if (!std::strcmp(tokens[0].c_str(), commands[i].c_str()))
+			break;
+	}
+
+	switch (i) {
+        case 0:
+            CheckPass(tokens, client, server);
+            break;
+        case 1:
+            CheckNickname(tokens, client, server);
+            break;
+        case 2:
+			SetUsername(tokens, client);
+            break;
+		case 3:
+			JoinChannel(tokens, server, client);
+			break;
+		default:
+			if (!client->inChannel)
+				SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
+			else
+				BroadcastToChannel(tokens, client, server);
+
+	}
     // std::string command = tokens[0];
 
     // if (command == "KICK") {
@@ -121,9 +156,9 @@ void	DoCommands(std::string buffer, Client *client, Server server)
     // }
 }
 
-void	ParseMessage(std::string buffer, Server server, int clientSocket)
+void	ParseMessage(std::string buffer, Server *server, int clientSocket)
 {
-	Client *client = server.FindClient(clientSocket);
+	Client *client = server->FindClient(clientSocket);
     if (!client){
         std::cerr << "Client not found for socket: " << clientSocket << std::endl;
         return;

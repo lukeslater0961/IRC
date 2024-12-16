@@ -6,13 +6,16 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/15 15:57:47 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/16 13:14:19 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Channel.hpp"
-
-
+#include "../includes/Server.hpp"
+#include "../includes/Client.hpp"
+#include "../includes/Utils.hpp"
+#include <vector>
+#include <string>
 Channel::Channel(const std::string &name)
 {
     _name = name;
@@ -45,7 +48,6 @@ bool Channel::HasMember(const std::string &nickname) const
     return _members.find(nickname) != _members.end();
 }
 
-
 void Channel::AddOperator(Client *client)
 {
     if (!HasOperator(client->getNickname()))
@@ -62,3 +64,4 @@ bool Channel::HasOperator(const std::string &nickname) const
 {
     return _operators.find(nickname) != _operators.end();
 }
+

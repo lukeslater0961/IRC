@@ -31,15 +31,18 @@ void signalHandler(int signal)
     if (signal == SIGINT) {
         std::cout << "\nCtrl+C detected. Shutting down server gracefully..." << std::endl;
 
-        if (serverSocket != -1) {
+        if (serverSocket != -1)
+		{
             close(serverSocket);
             std::cout << "Server socket closed." << std::endl;
         }
 
-        if (staticServer) {
+        if (staticServer)
+		{
 			for (std::vector<Client*>::iterator it = staticServer->client.begin(); it != staticServer->client.end(); ++it) {
 				Client *client = *it;
-				if (client) {
+				if (client)
+				{
                     std::cout << "Cleaning up client with socket: " << client->GetSocket() << std::endl;
                     close(client->GetSocket());
                     delete client;
@@ -54,19 +57,16 @@ void	DeleteClient(int clientSocket, Server &server)
 {
 	std::cout << "Deleting client with socket: " << clientSocket << std::endl;
 
-    // Find the client using the clientSocket
     Client *client = server.FindClient(clientSocket);
     if (client) {
-        // Use an iterator to remove the client from the vector
         std::vector<Client *>::iterator it = server.client.begin();
         while (it != server.client.end()) {
             if (*it == client) {
-                it = server.client.erase(it); // Erase and get the next iterator
-                delete client; // Free the memory allocated for the client
-                break; // Exit the loop once the client is removed
-            } else {
+                it = server.client.erase(it);
+                delete client;
+                break;
+			} else
                 ++it;
-            }
         }
     } else {
         std::cerr << "Client not found for socket: " << clientSocket << std::endl;
@@ -83,6 +83,7 @@ Client* Server::FindClient(int clientSocket)
     }
     return NULL;
 }
+
 int SetupServer(char **argv)
 {
     std::string port = argv[1];
@@ -105,17 +106,14 @@ void Server::CreateChannel(const std::string &name)
    if (_channels.find(name) == _channels.end()) {
         _channels[name] = new Channel(name);
         std::cout << "Channel " << name << " created." << std::endl;
-    } else {
-        std::cerr << "Error: Channel " << name << " already exists." << std::endl;
     }
 }
 
 Channel* Server::GetChannel(const std::string &name)
 {
   std::map<std::string, Channel*>::iterator it = _channels.find(name);
-    if (it != _channels.end()) {
+    if (it != _channels.end())
         return it->second;
-    }
     return NULL;
 }
 
@@ -126,9 +124,8 @@ void Server::DeleteChannel(const std::string &name)
         delete it->second;
         _channels.erase(it);
         std::cout << "Channel " << name << " deleted." << std::endl;
-    } else {
+    } else
         std::cerr << "Error: Channel " << name << " not found." << std::endl;
-    }
 }
 
 void StartServer(Server server)
@@ -231,7 +228,7 @@ void StartServer(Server server)
                 if (bytesReceived > 0)
                 {
                     buffer[bytesReceived] = '\0';
-					ParseMessage(buffer, server, clientSocket);
+					ParseMessage(buffer, &server, clientSocket);
                 }
                 else if (bytesReceived == 0)
                 {

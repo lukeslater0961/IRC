@@ -39,6 +39,10 @@ std::vector<std::string> split(const std::string& str, char delimiter);
 # define NICK_USAGE "NICK <nickname>, sets your nick\n"
 # define NICK_USE ":Nickname already in use\n"
 
+# define JOIN_USAGE "JOIN <channel>, joins the channel\n"
+# define JOINED "Talking on "
+# define CHANNEL_NAME " :Invalid channel name\n"
+
 # define USER_USAGE "<username> <realname>\n"
 
 #endif

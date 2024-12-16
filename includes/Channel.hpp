@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 15:33:05 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/15 18:18:52 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/16 13:10:38 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #define CHANNEL_HPP
 
 #include "Utils.hpp"
-
 
 class Channel
 {
@@ -47,6 +46,7 @@ class Channel
         bool isTopicRestricted() const { return _topicRestriction;};    
 
         std::string getName() const {return _name;};
+		std::map<std::string, Client *> GetMembers(void){return (this->_members);}
     
     private :
         std::string _name;

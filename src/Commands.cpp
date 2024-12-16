@@ -5,14 +5,15 @@
 #include "../includes/Channel.hpp"
 #include <sys/socket.h>
 
-void	SetUsername(std::string buffer, Client *client)
+void	SetUsername(std::vector<std::string> tokens, Client *client)
 {
-	std::vector<std::string> words = split(buffer, ' ');
-
-	if (!buffer[0])
+	if (tokens.size() == 1)
+	{
 		SendErrorMsg("USER :", USER_USAGE, client);
+		return ;
+	}
 	else
-		client->setUsername(words[0]);
+		client->setUsername(tokens[1]);
 }
 
 bool	CheckClientPass(Client *client)
@@ -28,17 +29,20 @@ bool	CheckClientPass(Client *client)
 	return (false);
 }
 
-void	CheckPass(std::string buffer, int index, Client *client, Server *server)
+void	CheckPass(std::vector<std::string> tokens, Client *client, Server *server)
 {
 	std::string password;
 
 	if (!CheckClientPass(client))
 	{
-		while (buffer[++index] != ' ' && buffer[index] != '\0' && buffer[index] != '\n')
-			password += buffer[index];
-
-		password[index] = '\0';
-		if (buffer[index] != '\n' && buffer[index] != '\0')
+		if (tokens.size() == 1)
+		{
+			SendErrorMsg("461 PASS", PASS_INC_PARAM, client);
+			send(client->GetSocket(), PASS_USAGE, sizeof(PASS_USAGE), MSG_EOR);
+			return ;
+		}
+		password = tokens[1];
+		if (tokens.size() > 2)
 		{
 			SendErrorMsg("464 PASS", PASS_INC, client);
 			return;
@@ -47,32 +51,27 @@ void	CheckPass(std::string buffer, int index, Client *client, Server *server)
 		{
 			if (!std::strcmp(password.c_str(), server->GetPassword().c_str()))
 				client->SetPassword(true);
-			else if (buffer[index] == '\0')
-			{
-				SendErrorMsg("461 PASS", PASS_INC_PARAM, client);
-				send(client->GetSocket(), PASS_USAGE, sizeof(PASS_USAGE), MSG_EOR);
-			}
 			else 
 				SendErrorMsg("464 PASS", PASS_INC, client);
 		}
 	}
 }
 
-void CheckNickname(std::string buffer, Client *client, Server *server)
+void CheckNickname(std::vector<std::string> tokens, Client *client, Server *server)
 {
 	std::string invChars[] = {":", ",", "*", "@", "!" , "."};
 	std::string nick;
-	int i = -1;
 
-	if (!buffer[0])
+	if (tokens.size() == 1)
+	{
 		SendErrorMsg("Usage: ", NICK_USAGE, client);
-
-	while (buffer[++i] && buffer[i] != '\n' && buffer[i] != ' ')
-		nick += buffer[i];
-
+		return ;
+	}
+	
+	nick = tokens[1];
 	for (size_t i = 0; i < sizeof(invChars)/sizeof(invChars[0]); ++i)
 	{
-		if (!buffer.find(invChars[i]))		
+		if (!tokens[1].find(invChars[i]))		
 		{
 			SendErrorMsg("432 " + nick, NON_NICK, client);
 			return;
@@ -114,7 +113,8 @@ void KickCommand(Server &server, const std::string &channelName, Client *operato
 }
 
 
-void InviteCommand(Server &server, const std::string &channelName, Client *operatorClient, Client *targetClient) {
+void InviteCommand(Server &server, const std::string &channelName, Client *operatorClient, Client *targetClient)
+{
     Channel *channel = server.GetChannel(channelName);
     if (!channel) {
 		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
@@ -134,7 +134,8 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
     std::cout << "Client " << targetClient->getNickname() << " has been invited to channel " << channelName << "." << std::endl;
 }
 
-void TopicCommand(Server &server, const std::string &channelName, Client *operatorClient, const std::string &newTopic) {
+void TopicCommand(Server &server, const std::string &channelName, Client *operatorClient, const std::string &newTopic)
+{
     Channel *channel = server.GetChannel(channelName);
     if (!channel) {
 		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
@@ -151,7 +152,8 @@ void TopicCommand(Server &server, const std::string &channelName, Client *operat
 }
 
 
-void ModeCommand(Server &server, Client *operatorClient, const std::string &channelName, const std::string &mode, const std::string &param) {
+void ModeCommand(Server &server, Client *operatorClient, const std::string &channelName, const std::string &mode, const std::string &param)
+{
     Channel* channel = server.GetChannel(channelName);
 
     if (!channel) {
