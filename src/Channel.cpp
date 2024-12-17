@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/16 13:14:19 by lslater          ###   ########.fr       */
+/*   Updated: 2024/12/17 10:14:45 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "../includes/Utils.hpp"
 #include <vector>
 #include <string>
+
 Channel::Channel(const std::string &name)
 {
     _name = name;
@@ -65,3 +66,12 @@ bool Channel::HasOperator(const std::string &nickname) const
     return _operators.find(nickname) != _operators.end();
 }
 
+
+// void Channel::broadcast(const std::string &message, Client *client)
+// {
+//     for (std::map<std::string, Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
+//     {
+//         if (it->second != client)
+//             SendMsg(it->second, message);
+//     }
+// }

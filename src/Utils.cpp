@@ -84,7 +84,7 @@ void LoginCommands(std::string buffer, Client *client, Server *server)
 				SetUsername(tokens, client);
 				break;
 			default:
-				SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
+				SendErrorMsg("No channel THIOS joined. " , "Try /join #<channel>\n", client);
 				break;
 		}
 	}

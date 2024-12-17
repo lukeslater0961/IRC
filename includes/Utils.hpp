@@ -24,6 +24,7 @@ void	signalHandler(int signal);
 void	SendErrorMsg(std::string prefix, std::string errorType, Client *client);
 std::vector<std::string> split(const std::string& str, char delimiter);
 void	BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server *server);
+void SendMsg(Client *client, const std::string &message);
 
 
 

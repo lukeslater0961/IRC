@@ -35,3 +35,58 @@ void	JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
 		}
 	}
 }
+
+
+// void SendMsg(Client *client, const std::string &message) {
+//     if (!client) {
+//         std::cerr << "Error: Null client pointer in SendMsg." << std::endl;
+//         return;
+//     }
+
+//     std::string msgToSend = message + "\r\n"; // Append IRC standard line ending
+//     int socket = client->GetSocket();         // Get the client's socket
+
+//     if (send(socket, msgToSend.c_str(), msgToSend.length(), 0) == -1) {
+//         std::cerr << "Error: Failed to send message to client " << client->getNickname() << std::endl;
+//     }
+// }
+
+// void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client) {
+//     if (tokens.size() < 2) {
+//         SendErrorMsg("461", "JOIN :Not enough parameters", client);
+//         return;
+//     }
+
+//     std::string channelName = tokens[1];
+//     if (channelName[0] != '#') { // Channels typically start with '#'
+//         SendErrorMsg("403", "JOIN :Invalid channel name", client);
+//         return;
+//     }
+
+//     // Check if the channel exists, otherwise create it
+//     Channel *channel = server->GetChannel(channelName);
+//     if (!channel) {
+//         server->CreateChannel(channelName);
+//         channel = server->GetChannel(channelName);
+//         std::cout << "Channel " << channelName << " created." << std::endl;
+//     }
+
+//     // Check if the client is already a member
+//     if (channel->HasMember(client->getNickname())) {
+//         SendErrorMsg("443", channelName + " :You're already in this channel", client);
+//         return;
+//     }
+
+//     // Add the client to the channel
+//     channel->AddMember(client);
+//     client->SetCurrentChannel(channelName); // Update the client's current channel
+//     std::cout << "Client " << client->getNickname() << " joined channel " << channelName << "." << std::endl;
+
+//     // Send confirmation to the client
+//     SendMsg(client, "You have joined channel " + channelName);
+
+//     // Broadcast the join message to all channel members
+//     std::string joinMessage = client->getNickname() + " has joined the channel.";
+//     channel->broadcast(joinMessage, client);
+// }
+
