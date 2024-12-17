@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 15:33:05 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/17 10:13:34 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/17 15:06:22 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,9 @@ class Channel
         void setUserLimit(int limit) {_userLimit = limit;};
         int getUserLimit() const {return _userLimit;};
 
+        std::string getCurrentChannel() const {return __currentChannel;};
+        void setCurrentChannel(const std::string &channel) {__currentChannel = channel;};
+        
         void setInviteOnly(bool mode) {_inviteOnly = mode;};
         bool isInviteOnly() const {return _inviteOnly;};
         void setTopicRestriction(bool mode) {_topicRestriction = mode;}; 
@@ -58,13 +61,15 @@ class Channel
         bool isTopicRestricted() const { return _topicRestriction;};    
 
         std::string getName() const {return this->_name;};
-        // void broadcast(const std::string &message, Client *client);
-		std::map<std::string, Client *> GetMembers(void){return (this->_members);}
-    
+        void broadcast(const std::string &message, Client *client);
+		std::map<std::string, Client *> GetMembers(void) const {return _members;};
+        std::string GetMemberList(void) const;
+        
     private :
         std::string _name;
         std::string _topic;
         std::string _password;
+        std::string __currentChannel;
         int _userLimit;
         bool _inviteOnly;
         bool _topicRestriction;

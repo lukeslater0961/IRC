@@ -92,7 +92,7 @@ void CheckNickname(std::vector<std::string> tokens, Client *client, Server *serv
 	{
 		if (!tokens[1].find(invChars[i]))		
 		{
-			SendErrorMsg("432 " + nick, NON_NICK, client);
+			SendErrorMsg(":localhost 432 " + nick, NON_NICK, client);
 			return;
 		}
 	}
@@ -101,11 +101,12 @@ void CheckNickname(std::vector<std::string> tokens, Client *client, Server *serv
 	{
 		if ((*it)->getNickname() == nick)
 		{
-			SendErrorMsg("433 " + nick, NICK_USE, client);
+            SendMsg(client, ":localhost 433 * " + nick + " " + NICK_USE);
 			return;
 		}
 	}
 	client->setNickname(nick);
+    SendMsg(client, ":localhost 001 " + client->getNickname() + " :Registered nickname " + client->getNickname());
 }
 
 
@@ -132,30 +133,24 @@ void KickCommand(Server &server, const std::string &channelName, Client *operato
 }
 
 
-void InviteCommand(Server &server, const std::string &channelName, Client *operatorClient, Client *targetClient)
+static Client *FindClientName(std::string name, Server *server)
 {
-    Channel *channel = server.GetChannel(channelName);
-    if (!channel) {
-		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
-        return;
+    for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
+    {
+        if ((*it)->getNickname() == name)
+            return (*it);
     }
-
-    if (!channel->HasOperator(operatorClient->getNickname())) {
-		SendErrorMsg("482 " + channelName, "You're not channel operator", operatorClient);
-        return;
-    }
-
-    if (channel->HasMember(targetClient->getNickname())) {
-		SendErrorMsg("443 " + targetClient->getNickname() + " " + channelName, "is already on channel", operatorClient);
-        return;
-    }
-
-    std::cout << "Client " << targetClient->getNickname() << " has been invited to channel " << channelName << "." << std::endl;
+    return (NULL);
 }
 
-void TopicCommand(Server &server, const std::string &channelName, Client *operatorClient, const std::string &newTopic)
+void InviteCommand(Server &server, const std::string &channelName, Client *operatorClient, std::string target)
 {
     Channel *channel = server.GetChannel(channelName);
+    Client *targetClient = FindClientName(target, &server);
+    if (!targetClient) {
+        SendErrorMsg("401 " + target, "No such client", operatorClient);
+        return;
+    }
     if (!channel) {
 		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
         return;
@@ -166,8 +161,38 @@ void TopicCommand(Server &server, const std::string &channelName, Client *operat
         return;
     }
 
+    if (channel->HasMember(target)) {
+		SendErrorMsg("443 " + target + " " + channelName, "is already on channel", operatorClient);
+        return;
+    }
+
+    std::cout << "Client " << target << " has been invited to channel " << channelName << "." << std::endl;
+}
+
+void TopicCommand(Server &server, const std::string &channelName, Client *operatorClient, std::vector<std::string> &tokens)
+{
+    Channel *channel = server.GetChannel(channelName);
+    std::string newTopic = "";
+    if (!channel) {
+		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
+        return;
+    }
+
+    if (!channel->HasOperator(operatorClient->getNickname())) {
+		SendErrorMsg("482 " + channelName, "You're not channel operator", operatorClient);
+        return;
+    }
+    for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); it++) 
+    {
+        if (it == tokens.begin() || it == tokens.begin() + 1)
+            continue;
+        newTopic += *it + " ";
+    }
     channel->SetTopic(newTopic);
     std::cout << "The topic for channel " << channelName << " has been set to: " << newTopic << std::endl;
+    BroadcastToChannel(split(":localhost TOPIC " + channelName + " " + newTopic, ' '), operatorClient, &server);
+
+
 }
 
 

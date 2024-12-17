@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/17 10:14:45 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/17 16:29:50 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,11 @@ Channel::~Channel()
 void Channel::AddMember(Client *client)
 {
     if (!HasMember(client->getNickname()))
+    {
         _members[client->getNickname()] = client;
+        if (_members.size() == 1)
+            _operators[client->getNickname()] = client;
+    }
 }
 
 void Channel::RemoveMember(const std::string &nickname)
@@ -67,11 +71,23 @@ bool Channel::HasOperator(const std::string &nickname) const
 }
 
 
-// void Channel::broadcast(const std::string &message, Client *client)
-// {
-//     for (std::map<std::string, Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
-//     {
-//         if (it->second != client)
-//             SendMsg(it->second, message);
-//     }
-// }
+void Channel::broadcast(const std::string &message, Client *client)
+{
+    for (std::map<std::string, Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
+    {
+        if (it->second != client)
+            SendMsg(it->second, message);
+    }
+}
+
+
+std::string Channel::GetMemberList() const {
+    std::string memberList = "";
+    for (std::map<std::string, Client*>::const_iterator it = _members.begin(); it != _members.end(); ++it) {
+        if (Channel::HasOperator(it->first)) {
+            memberList += "@";
+        }
+        memberList += it->first; // Add each member's nickname
+    }
+    return memberList;
+}

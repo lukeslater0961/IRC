@@ -36,141 +36,105 @@ void	BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 {
 	Channel *channel = server->GetChannel(client->GetCurrentChannel());
 	std::map<std::string, Client *> members = channel->GetMembers();
-	std::string msg = '\r' + client->getNickname() + ": ";
+    std::string msg;
 
 	for(size_t i = 0; i < tokens.size(); i++)
-		msg += tokens[i];
+    {
+        if (i > 0)
+            msg += " ";
+        msg += tokens[i];
+    }
 
 	msg += '\n';
     for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
     {
-        if (it->second != client)
+        // if (it->second != client)
 			send(it->second->GetSocket(), msg.c_str(), msg.size(), MSG_EOR);
     }
 }
 
-void LoginCommands(std::string buffer, Client *client, Server *server)
+void DoCommands(std::string buffer, Client *client, Server *server)
 {
-	size_t j = 0;
+	size_t j;
+    size_t i;
     std::string token;
-    std::string commands[] = {"PASS", "NICK", "USER"};
+    std::string unloggedcommands[] = {"PASS", "NICK", "USER", "QUIT"};
+	std::string	commandslogged[] = {"JOIN", "PRIVMSG", "WHO", "MODE", "TOPIC", "KICK", "INVITE", "CAP"};
 
     if (buffer.empty())
         return;
 
     std::vector<std::string> newbuffer = split(buffer, '\n');
-	
 	for (std::vector<std::string>::iterator it = newbuffer.begin(); it != newbuffer.end(); it++)
 	{
+        j = 0;
+        i = 0;
 		std::string command_line = it->data();
 		command_line = command_line.substr(0, command_line.find('\r'));
 		std::vector<std::string> tokens = split(command_line, ' ');
 		std::string tokens2 = command_line.substr(0, command_line.find(' '));
 		
-		for (; j < sizeof(commands) / sizeof(commands[0]); j++)
+		for (; j < sizeof(unloggedcommands) / sizeof(unloggedcommands[0]); j++)
 		{
-			if (std::strcmp(tokens2.c_str(), commands[j].c_str()))
+			if (!std::strcmp(tokens2.c_str(), unloggedcommands[j].c_str()))
 				break;
 		}
-		
+		std::cout << j << " ->" << tokens[0] << std::endl;
+        if ((client->GetPassword() && client->getNickname().size() > 1 && client->getUsername().size() > 1) && j == sizeof(unloggedcommands) / sizeof(unloggedcommands[0]))
+        {
+            for (; i < sizeof(commandslogged) / sizeof(commandslogged[0]); i++)
+            {
+                if (!std::strcmp(tokens2.c_str(), commandslogged[i].c_str()))
+                    break;
+            }
+        }
+        // if (j == sizeof(unloggedcommands) / sizeof(unloggedcommands[0]))
+        j += i;
+		std::cout << j << " ->" << tokens[0] << std::endl;
 		switch (j) {
-			case 1:
+			case 0:
 				CheckPass(tokens, client, server);
 				break;
-			case 2:
+			case 1:
 				CheckNickname(tokens, client, server);
 				break;
-			case 3:
+			case 2:
 				SetUsername(tokens, client);
 				break;
+            case 3:
+                client->StopClient();
+                break;
+            case 4:
+	    		JoinChannel(tokens, server, client);
+                break;
+            case 5:
+                Broadcast(tokens, server, client);
+                break;
+            case 6:
+                break;
+            case 7:
+                // ModeCommand(*server, client, tokens[1], tokens[2], tokens[3]);
+                break;
+            case 8:
+                std::cout << "TOPIC" << std::endl;
+                TopicCommand(*server, tokens[1], client, tokens);
+                break;
+            case 9:
+                KickCommand(*server, tokens[1], client, tokens[2]);
+                break;
+            case 10:
+                InviteCommand(*server, tokens[1], client, tokens[2]);
+                break;
+            case 11:
+                break;
 			default:
-				SendErrorMsg("No channel THIOS joined. " , "Try /join #<channel>\n", client);
+				SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
 				break;
 		}
 	}
 }
 
-void	DoCommands(std::string buffer, Client *client, Server *server)
-{
-	std::cout << "normal commands" << std::endl;
-	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "PRIVMSG"};
-    std::vector<std::string> tokens = split(buffer, ' ');
-	size_t i = 0;
 
-    if (tokens.empty())
-		return;
-
-	for(; i < sizeof(commands)/sizeof(commands[0]); i++)
-	{
-		if (!std::strcmp(tokens[0].c_str(), commands[i].c_str()))
-			break;
-	}
-		
-	std::cout << i << std::endl;
-
-	switch (i) {
-        case 0:
-            CheckPass(tokens, client, server);
-            break;
-        case 1:
-            CheckNickname(tokens, client, server);
-            break;
-        case 2:
-			SetUsername(tokens, client);
-            break;
-		case 3:
-			JoinChannel(tokens, server, client);
-			break;
-		case 4:
-			Broadcast(tokens, server, client);
-		default:
-			if (!client->inChannel)
-				SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
-			else
-				SendErrorMsg(tokens[0], UNKNOWN_CMD, client);
-	}
-    // std::string command = tokens[0];
-
-    // if (command == "KICK") {
-    //     if (tokens.size() < 3) {
-    //         SendErrorMsg("461", "KICK :Not enough parameters", client);
-    //         return;
-    //     }
-    //     std::string channel = tokens[1];
-    //     std::string user = tokens[2];
-    //     KickCommand(server, channel, user, client);
-    // } else if (command == "MODE") {
-    //     if (tokens.size() < 3) {
-    //         SendErrorMsg("461", "MODE :Not enough parameters", client);
-    //         return;
-    //     }
-
-    //     std::string target = tokens[1];
-    //     std::string mode = tokens[2];
-    //     std::string param = (tokens.size() > 3) ? tokens[3] : "";
-
-    //     // Call the ModeCommand handler with the parsed arguments
-    //     ModeCommand(server, client, target, mode, param);
-    // } else if (command == "TOPIC") {
-    //     if (tokens.size() < 2) {
-    //         SendErrorMsg("461", "TOPIC :Not enough parameters", client);
-    //         return;
-    //     }
-    //     std::string channel = tokens[1];
-    //     std::string topic = tokens.size() > 2 ? tokens[2] : "";
-    //     TopicCommand(server, channel, topic, client);
-    // } else if (command == "INVITE") {
-    //     if (tokens.size() < 3) {
-    //         SendErrorMsg("461", "INVITE :Not enough parameters", client);
-    //         return;
-    //     }
-    //     std::string user = tokens[1];
-    //     std::string channel = tokens[2];
-    //     InviteCommand(server, user, channel, client);
-    // } else {
-    //     SendErrorMsg("421 " + command, "Unknown command", client);
-    // }
-}
 
 void	ParseMessage(std::string buffer, Server *server, int clientSocket)
 {
@@ -180,8 +144,5 @@ void	ParseMessage(std::string buffer, Server *server, int clientSocket)
         return;
     }
 	std::cout << "receiving ::: " + buffer << std::endl;
-	if (!client->GetPassword() || client->getNickname().empty() || client->getUsername().empty())
-		LoginCommands(buffer, client, server);
-	else 
-		DoCommands(buffer, client, server);
-} 
+    DoCommands(buffer, client, server);
+}
