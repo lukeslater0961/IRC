@@ -11,14 +11,19 @@ void	Broadcast(std::vector<std::string> tokens, Server *server, Client *client)
 		return ;
 	else if (tokens.size() == 3)
 	{
+        std::cout << "three args" << std::endl;
 		if (tokens[1][0] == '#')
 			BroadcastToChannel(tokens, client, server);
 		else
 		{
 			for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
 			{
+                std::cout << tokens[1] << std::endl;
 				if ((*it)->getNickname() == tokens[1])
-					send((*it)->GetSocket(), tokens[2].c_str(), tokens[2].size(), MSG_EOR);
+                {
+                    std::string msg = ":" + client->getNickname() + " PRIVMSG " + tokens[1] + " " + tokens[2];
+                    SendMsg(*it, msg);
+                }
 			}
 		}
 	}
@@ -142,7 +147,8 @@ void KickCommand(Server &server, const std::string &channelName, Client *operato
 
     channel->RemoveMember(targetNickname);
     std::cout << "Client " << targetNickname << " has been kicked from channel " << channelName << "." << std::endl;
-    BroadcastToChannel(split(":localhost KICK " + channelName + " " + targetNickname, ' '), operatorClient, &server);
+    std::string msg = ":" + operatorClient->getNickname() + "!" + operatorClient->getUsername() + "@localhost KICK " + channelName + " " + targetNickname + "\n";
+    channel->broadcast(msg, client);
 	client->inChannel = false;
 }
 
@@ -171,6 +177,8 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
     }
 
     std::cout << "Client " << target << " has been invited to channel " << channelName << "." << std::endl;
+    std::string msg = ":" + operatorClient->getNickname() + "!" + operatorClient->getUsername() + "@localhost INVITE " + target + " " + channelName + "\n";
+    channel->broadcast(msg, targetClient);
 }
 
 void TopicCommand(Server &server, const std::string &channelName, Client *operatorClient, std::vector<std::string> &tokens)
@@ -194,9 +202,9 @@ void TopicCommand(Server &server, const std::string &channelName, Client *operat
     }
     channel->SetTopic(newTopic);
     std::cout << "The topic for channel " << channelName << " has been set to: " << newTopic << std::endl;
-    BroadcastToChannel(split(":localhost TOPIC " + channelName + " " + newTopic, ' '), operatorClient, &server);
-
-
+    std::string msg = ":" + operatorClient->getNickname() + "!" + operatorClient->getUsername() + "@localhost TOPIC " + channelName + " :" + newTopic + "\n";
+    channel->broadcast(msg, operatorClient);
+    
 }
 
 

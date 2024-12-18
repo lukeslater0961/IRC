@@ -180,7 +180,7 @@ void StartServer(Server server)
     while (true)
     {
         int poll_count = poll(fds, nfds, 100); // Wait for an event
-
+        // std::cout << "Poll count: " << poll_count << std::endl;
         if (poll_count < 0)
         {
             perror("Poll failed");

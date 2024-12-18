@@ -35,6 +35,7 @@ int	ErrorMngment(std::string msg)
 void	BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server *server)
 {
 	Channel *channel = server->GetChannel(client->GetCurrentChannel());
+    
 	std::map<std::string, Client *> members = channel->GetMembers();
 	std::string msg = ":" + client->getNickname() + " ";
 
@@ -134,8 +135,6 @@ void DoCommands(std::string buffer, Client *client, Server *server)
 			default:
 				if (!client->inChannel)
 					SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
-				else
-					BroadcastToChannel(tokens, client, server);
 				break;
 		}
 	}
