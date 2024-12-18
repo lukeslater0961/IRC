@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/17 16:29:50 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/18 13:12:55 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,13 +81,14 @@ void Channel::broadcast(const std::string &message, Client *client)
 }
 
 
-std::string Channel::GetMemberList() const {
+std::string Channel::GetMemberList() const
+{
     std::string memberList = "";
     for (std::map<std::string, Client*>::const_iterator it = _members.begin(); it != _members.end(); ++it) {
         if (Channel::HasOperator(it->first)) {
             memberList += "@";
         }
-        memberList += it->first; // Add each member's nickname
+        memberList += it->first + " ";
     }
     return memberList;
 }

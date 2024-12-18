@@ -68,9 +68,8 @@ void	DeleteClient(int clientSocket, Server &server)
 			} else
                 ++it;
         }
-    } else {
+    } else
         std::cerr << "Client not found for socket: " << clientSocket << std::endl;
-    }
 }
 
 Client* Server::FindClient(int clientSocket)

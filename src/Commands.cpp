@@ -110,39 +110,42 @@ void CheckNickname(std::vector<std::string> tokens, Client *client, Server *serv
 }
 
 
+static Client *FindClientName(std::string name, Server *server)
+{
+	for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
+	{
+		if ((*it)->getNickname() == name)
+			return (*it);
+	}
+	return (NULL);
+}
+
 void KickCommand(Server &server, const std::string &channelName, Client *operatorClient, const std::string &targetNickname)
 {
 	Channel *channel = server.GetChannel(channelName);
+	Client *client = FindClientName(targetNickname, &server);
+
     if (!channel) {
-		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
+		SendErrorMsg("403 " + channelName, "No such channel\n", operatorClient);
         return;
     }
 
     if (!channel->HasOperator(operatorClient->getNickname())) {
-		SendErrorMsg("482 " + channelName, "You're not channel operator", operatorClient);
+		SendErrorMsg("482 " + channelName, "You're not channel operator\n", operatorClient);
         return;
     }
 
     if (!channel->HasMember(targetNickname)) {
-		SendErrorMsg("441 " + targetNickname + " " + channelName, "They aren't on that channel", operatorClient);
+		SendErrorMsg("441 " + targetNickname + " " + channelName, "They aren't on that channel\n", operatorClient);
         return;
     }
 
     channel->RemoveMember(targetNickname);
     std::cout << "Client " << targetNickname << " has been kicked from channel " << channelName << "." << std::endl;
     BroadcastToChannel(split(":localhost KICK " + channelName + " " + targetNickname, ' '), operatorClient, &server);
+	client->inChannel = false;
 }
 
-
-static Client *FindClientName(std::string name, Server *server)
-{
-    for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
-    {
-        if ((*it)->getNickname() == name)
-            return (*it);
-    }
-    return (NULL);
-}
 
 void InviteCommand(Server &server, const std::string &channelName, Client *operatorClient, std::string target)
 {

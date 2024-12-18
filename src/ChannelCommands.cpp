@@ -76,4 +76,7 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
 
     // Broadcast the join message to all other members in the channel
     channel->broadcast(joinMessage, client);
+
+	std::cout << "managed to broadcast everything" << std::endl;
+	client->inChannel = true;
 }

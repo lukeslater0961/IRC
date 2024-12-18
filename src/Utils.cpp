@@ -36,7 +36,7 @@ void	BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 {
 	Channel *channel = server->GetChannel(client->GetCurrentChannel());
 	std::map<std::string, Client *> members = channel->GetMembers();
-    std::string msg;
+	std::string msg = ":" + client->getNickname() + " ";
 
 	for(size_t i = 0; i < tokens.size(); i++)
     {
@@ -47,9 +47,10 @@ void	BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 
 	msg += '\n';
     for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
-    {
+	{
+		if (it->second->GetSocket() != client->GetSocket())
 			send(it->second->GetSocket(), msg.c_str(), msg.size(), MSG_EOR);
-    }
+	}
 }
 
 void DoCommands(std::string buffer, Client *client, Server *server)
@@ -86,6 +87,7 @@ void DoCommands(std::string buffer, Client *client, Server *server)
                     break;
             }
         }
+
         j += i;
 		switch (j) {
 			case 0:
@@ -130,15 +132,14 @@ void DoCommands(std::string buffer, Client *client, Server *server)
                 InviteCommand(*server, tokens[1], client, tokens[2]);
                 break;
 			default:
-				SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
+				if (!client->inChannel)
+					SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
+				else
+					BroadcastToChannel(tokens, client, server);
 				break;
 		}
 	}
 }
-
-
-
-
 
 void	ParseMessage(std::string buffer, Server *server, int clientSocket)
 {
@@ -147,6 +148,5 @@ void	ParseMessage(std::string buffer, Server *server, int clientSocket)
         std::cerr << "Client not found for socket: " << clientSocket << std::endl;
         return;
     }
-	std::cout << "receiving ::: " + buffer << std::endl;
     DoCommands(buffer, client, server);
 }
