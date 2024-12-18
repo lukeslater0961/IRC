@@ -130,6 +130,7 @@ void KickCommand(Server &server, const std::string &channelName, Client *operato
 
     channel->RemoveMember(targetNickname);
     std::cout << "Client " << targetNickname << " has been kicked from channel " << channelName << "." << std::endl;
+    BroadcastToChannel(split(":localhost KICK " + channelName + " " + targetNickname, ' '), operatorClient, &server);
 }
 
 

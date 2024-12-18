@@ -20,6 +20,11 @@ void SendMsg(Client *client, const std::string &message) {
 
 void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client)
 {
+     std::cout << "JoinChannel called with tokens:" << std::endl;
+    for (size_t i = 0; i < tokens.size(); ++i) {
+        std::cout << "Token[" << i << "]: " << tokens[i] << std::endl;
+    }
+
     if (tokens.size() < 2) {
         SendErrorMsg("461", "JOIN :Not enough parameters", client);
         return;
@@ -28,8 +33,8 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
     std::string channelName = tokens[1];
 
     // Validate channel name
-    if (channelName[0] != '#') {
-        SendErrorMsg("403", "JOIN :Invalid channel name", client);
+    if (channelName.empty() ||  channelName[0] != '#') {
+        SendErrorMsg("403", channelName + " :Invalid channel name", client);
         return;
     }
 
