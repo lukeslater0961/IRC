@@ -11,21 +11,15 @@ void	Broadcast(std::vector<std::string> tokens, Server *server, Client *client)
 		return ;
 	else if (tokens.size() == 3)
 	{
-        std::cout << "three args" << std::endl;
-		if (tokens[1][0] == '#')
-			BroadcastToChannel(tokens, client, server);
-		else
-		{
-			for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
-			{
-                std::cout << tokens[1] << std::endl;
-				if ((*it)->getNickname() == tokens[1])
-                {
-                    std::string msg = ":" + client->getNickname() + " PRIVMSG " + tokens[1] + " " + tokens[2];
-                    SendMsg(*it, msg);
-                }
-			}
-		}
+        for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
+        {
+            std::cout << tokens[1] << std::endl;
+            if ((*it)->getNickname() == tokens[1] && (*it)->getNickname() != client->getNickname())
+            {
+                std::string msg = ":" + client->getNickname() + " PRIVMSG " + tokens[1] + " " + tokens[2];
+                SendMsg(*it, msg);
+            }
+        }
 	}
 }
 
@@ -183,7 +177,7 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
 
 void TopicCommand(Server &server, const std::string &channelName, Client *operatorClient, std::vector<std::string> &tokens)
 {
-    Channel *channel = server.GetChannel(channelName);
+     Channel *channel = server.GetChannel(channelName);
     std::string newTopic = "";
     if (!channel) {
 		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
@@ -202,9 +196,7 @@ void TopicCommand(Server &server, const std::string &channelName, Client *operat
     }
     channel->SetTopic(newTopic);
     std::cout << "The topic for channel " << channelName << " has been set to: " << newTopic << std::endl;
-    std::string msg = ":" + operatorClient->getNickname() + "!" + operatorClient->getUsername() + "@localhost TOPIC " + channelName + " :" + newTopic + "\n";
-    channel->broadcast(msg, operatorClient);
-    
+    BroadcastToChannel(split(":localhost TOPIC " + channelName + " " + newTopic, ' '), operatorClient, &server);
 }
 
 
@@ -222,22 +214,21 @@ void ModeCommand(Server &server, Client *operatorClient, const std::string &chan
         return;
     }
 
-    if (mode == "i") { // Mode invitation uniquement
-        if (param == "+i") {
+    if (!std::strcmp(mode.c_str(), "i")) { // Mode invitation uniquement
+        if (!std::strcmp(param.c_str(), "+i")) {
             channel->setInviteOnly(true);
             std::cout << "Channel " << channelName << " is now invite-only." << std::endl;
-        } else if (param == "-i") {
+        } else if (!std::strcmp(param.c_str(), "-i")) {
             channel->setInviteOnly(false);
             std::cout << "Channel " << channelName << " is no longer invite-only." << std::endl;
-        } else {
+        } else
             SendErrorMsg("472 " + channelName, "Invalid argument for mode i", operatorClient);
-        }
     }
-    else if (mode == "t") { // Restreindre le sujet aux opérateurs
-        if (param == "+t") {
+    else if (!std::strcmp(mode.c_str(), "t")) { // Restreindre le sujet aux opérateurs
+        if (!std::strcmp(param.c_str(), "+t")) {
             channel->setTopicRestriction(true);
             std::cout << "Only operators can change the topic in channel " << channelName << "." << std::endl;
-        } else if (param == "-t") {
+        } else if (!std::strcmp(param.c_str(), "-t")) {
             channel->setTopicRestriction(false);
             std::cout << "All members can change the topic in channel " << channelName << "." << std::endl;
         } else {
@@ -255,9 +246,8 @@ void ModeCommand(Server &server, Client *operatorClient, const std::string &chan
         } else if (param == "-k") {
             channel->SetPassword("");
             std::cout << "Password for channel " << channelName << " removed." << std::endl;
-        } else {
+        } else 
             SendErrorMsg("472 " + channelName, "Invalid argument for mode k", operatorClient);
-        }
     }
     else if (mode == "l") { // Limite d'utilisateurs
         if (param == "+l") {
@@ -265,17 +255,14 @@ void ModeCommand(Server &server, Client *operatorClient, const std::string &chan
             if (limit > 0) {
                 channel->setUserLimit(limit);
                 std::cout << "User limit for channel " << channelName << " set to: " << limit << std::endl;
-            } else {
+            } else 
                 SendErrorMsg("461 " + channelName, "You must provide a valid user limit", operatorClient);
-            }
         } else if (param == "-l") {
             channel->setUserLimit(0); // No limit
             std::cout << "User limit for channel " << channelName << " removed (no limit)." << std::endl;
-        } else {
+        } else 
             SendErrorMsg("472 " + channelName, "Invalid argument for mode l", operatorClient);
-        }
     }
-    else {
+    else 
         SendErrorMsg("472 " + channelName, "Invalid mode specified", operatorClient);
-    }
 }

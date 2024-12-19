@@ -37,7 +37,7 @@ void	BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 	Channel *channel = server->GetChannel(client->GetCurrentChannel());
     
 	std::map<std::string, Client *> members = channel->GetMembers();
-	std::string msg = ":" + client->getNickname() + " ";
+	std::string msg = ":" + client->getNickname();
 
 	for(size_t i = 0; i < tokens.size(); i++)
     {
@@ -48,10 +48,7 @@ void	BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 
 	msg += '\n';
     for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
-	{
-		if (it->second->GetSocket() != client->GetSocket())
 			send(it->second->GetSocket(), msg.c_str(), msg.size(), MSG_EOR);
-	}
 }
 
 void DoCommands(std::string buffer, Client *client, Server *server)
@@ -121,7 +118,7 @@ void DoCommands(std::string buffer, Client *client, Server *server)
             case 7:
                 break;
             case 8:
-                // ModeCommand(*server, client, tokens[1], tokens[2], tokens[3]);
+                ModeCommand(*server, client, tokens[1], tokens[2], tokens[3]);
                 break;
             case 9:
                 TopicCommand(*server, tokens[1], client, tokens);
