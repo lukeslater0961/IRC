@@ -118,7 +118,7 @@ void DoCommands(std::string buffer, Client *client, Server *server)
             case 7:
                 break;
             case 8:
-                ModeCommand(*server, client, tokens[1], tokens[2], tokens[3]);
+                ModeCommand(*server, client, tokens);
                 break;
             case 9:
                 TopicCommand(*server, tokens[1], client, tokens);
