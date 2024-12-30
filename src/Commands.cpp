@@ -183,17 +183,20 @@ void TopicCommand(Server &server, const std::string &channelName, Client *operat
 		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
         return;
     }
-
-    if (!channel->HasOperator(operatorClient->getNickname())) {
-		SendErrorMsg("482 " + channelName, "You're not channel operator", operatorClient);
-        return;
-    }
+	if (channel->isTopicRestricted())
+	{
+    	if (!channel->HasOperator(operatorClient->getNickname())) {
+			SendErrorMsg("482 " + operatorClient->getNickname() + " " + channelName, "You're not channel operator", operatorClient);
+    	    return;
+    	}
+	}
     for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); it++) 
     {
         if (it == tokens.begin() || it == tokens.begin() + 1)
             continue;
         newTopic += *it + " ";
     }
+
     channel->SetTopic(newTopic);
     std::cout << "The topic for channel " << channelName << " has been set to: " << newTopic << std::endl;
     BroadcastToChannel(split(":localhost TOPIC " + channelName + " " + newTopic, ' '), operatorClient, &server);

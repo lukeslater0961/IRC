@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 15:33:05 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/17 15:06:22 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/30 16:11:54 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ class Channel
         void RemoveMember(const std::string &nickname);
         bool HasMember(const std::string &nickname) const;
 
-        void AddOperator(Client *client);
+        void AddOperator(std::string nickname);
         void RemoveOperator(const std::string &nickname);
         bool HasOperator(const std::string &nickname) const;
 
@@ -47,9 +47,11 @@ class Channel
         
         void SetPassword(const std::string &password) {_password = password;};
         std::string GetPassword() const{return _password;};
+        void clearPassword() {_password = "";};
 
         void setUserLimit(int limit) {_userLimit = limit;};
         int getUserLimit() const {return _userLimit;};
+        void clearUserLimit() {_userLimit = -1;};
 
         std::string getCurrentChannel() const {return __currentChannel;};
         void setCurrentChannel(const std::string &channel) {__currentChannel = channel;};

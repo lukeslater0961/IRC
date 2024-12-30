@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/18 16:20:53 by tsoloher         ###   ########.fr       */
+/*   Updated: 2024/12/30 16:34:39 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ Channel::Channel(const std::string &name)
     _password = "";
     _userLimit = -1;
     _inviteOnly = false;
+    _topicRestriction = false;
 }
 
 Channel::~Channel()
@@ -53,10 +54,10 @@ bool Channel::HasMember(const std::string &nickname) const
     return _members.find(nickname) != _members.end();
 }
 
-void Channel::AddOperator(Client *client)
+void Channel::AddOperator(std::string nickname)
 {
-    if (!HasOperator(client->getNickname()))
-        _operators[client->getNickname()] = client;
+    if (!HasOperator(nickname))
+        _operators[nickname] = _members[nickname];
 }
 
 void Channel::RemoveOperator(const std::string &nickname)

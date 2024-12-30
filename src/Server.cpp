@@ -20,7 +20,7 @@ void Server::AddClient(int clientSocket)
         if (this->client[i]->GetSocket() == -1 && this->client[i]->GetSocket() != clientSocket)
         {
             this->client[i]->SetSocket(clientSocket);
-            break;
+            break ;
         }
     }
 }
