@@ -5,24 +5,6 @@
 #include "../includes/Channel.hpp"
 #include <sys/socket.h>
 
-void	Broadcast(std::vector<std::string> tokens, Server *server, Client *client)
-{
-	if (tokens.size() == 1)
-		return ;
-	else if (tokens.size() == 3)
-	{
-        for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
-        {
-            std::cout << tokens[1] << std::endl;
-            if ((*it)->getNickname() == tokens[1] && (*it)->getNickname() != client->getNickname())
-            {
-                std::string msg = ":" + client->getNickname() + " PRIVMSG " + tokens[1] + " " + tokens[2];
-                SendMsg(*it, msg);
-            }
-        }
-	}
-}
-
 
 void	SetUsername(std::vector<std::string> tokens, Client *client)
 {
@@ -142,7 +124,8 @@ void KickCommand(Server &server, const std::string &channelName, Client *operato
     channel->RemoveMember(targetNickname);
     std::cout << "Client " << targetNickname << " has been kicked from channel " << channelName << "." << std::endl;
     std::string msg = ":" + operatorClient->getNickname() + "!" + operatorClient->getUsername() + "@localhost KICK " + channelName + " " + targetNickname + "\n";
-    channel->broadcast(msg, client);
+    channel->broadcast(msg, NULL);
+	SendMsg(client, msg);
 	client->inChannel = false;
 }
 
@@ -199,6 +182,6 @@ void TopicCommand(Server &server, const std::string &channelName, Client *operat
 
     channel->SetTopic(newTopic);
     std::cout << "The topic for channel " << channelName << " has been set to: " << newTopic << std::endl;
-    BroadcastToChannel(split(":localhost TOPIC " + channelName + " " + newTopic, ' '), operatorClient, &server);
+	channel->broadcast(":" + operatorClient->getNickname() + " TOPIC " + channelName + " " + newTopic + "\n", NULL);
 }
 

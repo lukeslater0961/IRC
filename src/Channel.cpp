@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/30 16:34:39 by tsoloher         ###   ########.fr       */
+/*   Updated: 2025/01/03 11:38:45 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,9 +74,10 @@ bool Channel::HasOperator(const std::string &nickname) const
 
 void Channel::broadcast(const std::string &message, Client *client)
 {
+    (void)client;
     for (std::map<std::string, Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
     {
-        if (it->second != client)
+        if (it->second != client )
             SendMsg(it->second, message);
     }
 }

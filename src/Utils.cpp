@@ -32,24 +32,46 @@ int	ErrorMngment(std::string msg)
 	return (1);
 }
 
-void	BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server *server)
-{
-	Channel *channel = server->GetChannel(client->GetCurrentChannel());
-    
-	std::map<std::string, Client *> members = channel->GetMembers();
-	std::string msg = ":" + client->getNickname();
+void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server *server) {
+    Channel *channel = server->GetChannel(client->GetCurrentChannel());
+    if (!channel) {
+        std::cerr << "Error: Client is not in a valid channel." << std::endl;
+        return;
+    }
 
-	for(size_t i = 0; i < tokens.size(); i++)
-    {
-        if (i > 0)
+    // Retrieve the members of the channel
+    std::map<std::string, Client *> members = channel->GetMembers();
+    if (members.empty()) {
+        std::cerr << "Error: Channel has no members." << std::endl;
+        return;
+    }
+
+    // Construct the IRC-compliant message
+    std::string msg = ":" + client->getNickname() + " PRIVMSG " + channel->getName() + " :";
+
+    for (size_t i = 1; i < tokens.size(); ++i) { // Start from tokens[1] to skip the command itself
+        if (i > 1)
             msg += " ";
         msg += tokens[i];
     }
 
-	msg += '\n';
-    for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
-			send(it->second->GetSocket(), msg.c_str(), msg.size(), MSG_EOR);
+    msg += "\r\n"; // Append IRC-compliant line ending
+
+    // Broadcast the message to all members of the channel, excluding the sender
+    for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it) {
+        if (it->second == client) {
+            continue; // Skip sending the message to the sender
+        }
+
+        if (send(it->second->GetSocket(), msg.c_str(), msg.size(), 0) == -1) {
+            std::cerr << "Error: Failed to send message to " << it->first << std::endl;
+        }
+    }
+
+    // Debug: Log the final broadcasted message
+    std::cout << "Broadcasted message (excluding sender): " << msg << std::endl;
 }
+
 
 void DoCommands(std::string buffer, Client *client, Server *server)
 {
@@ -113,7 +135,7 @@ void DoCommands(std::string buffer, Client *client, Server *server)
 	    		JoinChannel(tokens, server, client);
                 break;
             case 6:
-                Broadcast(tokens, server, client);
+                BroadcastToChannel(tokens, client, server);
                 break;
             case 7:
                 break;

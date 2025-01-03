@@ -33,11 +33,15 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
     std::string channelName = tokens[1];
 
     // Validate channel name
+    std::cout << "Channel name: " << channelName[0] << std::endl;
     if (channelName.empty() ||  channelName[0] != '#') {
-        SendErrorMsg("403", channelName + " :Invalid channel name", client);
+        std::string errorMessage = ":localhost 403 " + client->getNickname() + " " + channelName + " :Invalid channel name";
+        SendMsg(client, errorMessage);
+        // tokens.clear();
         return;
     }
 
+    // tokens.clear();
     Channel *channel = server->GetChannel(channelName);
     if (!channel) {
         server->CreateChannel(channelName);
