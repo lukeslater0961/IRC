@@ -152,11 +152,11 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
 		SendErrorMsg("443 " + target + " " + channelName, "is already on channel", operatorClient);
         return;
     }
-
     std::cout << "Client " << target << " has been invited to channel " << channelName << "." << std::endl;
     std::string msg = ":" + operatorClient->getNickname() + "!" + operatorClient->getUsername() + "@localhost INVITE " + target + " " + channelName + "\n";
     channel->broadcast(msg, targetClient);
 }
+
 
 void TopicCommand(Server &server, const std::string &channelName, Client *operatorClient, std::vector<std::string> &tokens)
 {

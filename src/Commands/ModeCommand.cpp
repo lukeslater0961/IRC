@@ -74,16 +74,16 @@ void CheckAndExecMode(Channel& channel, const std::string& mode, const std::stri
 
 
 void SendModeResponse(Server& server, Client* client, const std::string& response) {
-	(void)server;
-	send(client->GetSocket(), response.c_str(), response.size(), 0);
+    (void)server;
+    if (send(client->GetSocket(), response.c_str(), response.length(), 0) == -1) {
+        std::cerr << "Error: Failed to send MODE response to client " << client->getNickname() << std::endl;
+    }
 }
 
 
 void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string> tokens) {
-    if (tokens.size() < 3) {
-        SendModeResponse(server, operatorClient, ":server 461 MODE :Not enough parameters\r\n");
+    if (tokens.size() < 3)
         return;
-    }
 
     // Get the channel
     Channel *channel = server.GetChannel(tokens[1]);

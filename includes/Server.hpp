@@ -10,6 +10,7 @@
 class Server{
 	public:
 		Server();
+		~Server();
 		void		SetPort(int portValue){this->_port = portValue;};
 		void		SetPassword(std::string password){this->_password = password;};
 
@@ -31,7 +32,7 @@ class Server{
 };
 
 int		SetupServer(char **argv);
-void	StartServer(Server server);
+void	StartServer(Server &server);
 void	ParseMessage(std::string buffer, Server *server, int clientSocket);
 #endif
 

@@ -9,28 +9,32 @@ static int serverSocket = -1;
 static Server *staticServer = NULL;
 
 Server::Server() {}
+Server::~Server() {
+}
 
 void Server::AddClient(int clientSocket)
 {
-    Client *newClient = new Client();
-    std::cout << "in add client" << std::endl;
+   Client *newClient = new Client();
+    newClient->SetSocket(clientSocket);
     this->client.push_back(newClient);
-    for (int i = 0; i < MAX_CLIENTS; i++)
-    {
-        if (this->client[i]->GetSocket() == -1 && this->client[i]->GetSocket() != clientSocket)
-        {
-            this->client[i]->SetSocket(clientSocket);
-            break ;
-        }
-    }
+    std::cout << "Added client with socket: " << clientSocket << std::endl;
 }
 
+bool IsValidMessage(const char* message)
+{
+    // Example validation logic: check if the message is not empty and does not exceed a certain length
+    if (message == NULL || strlen(message) == 0 || strlen(message) > BUFFER_SIZE - 1)
+    {
+        return false;
+    }
+    // Additional validation logic can be added here
+    return true;
+}
 
 void signalHandler(int signal)
 {
     if (signal == SIGINT) {
         std::cout << "\nCtrl+C detected. Shutting down server gracefully..." << std::endl;
-
         if (serverSocket != -1)
 		{
             close(serverSocket);
@@ -55,21 +59,26 @@ void signalHandler(int signal)
 
 void	DeleteClient(int clientSocket, Server &server)
 {
-	std::cout << "Deleting client with socket: " << clientSocket << std::endl;
-
-    Client *client = server.FindClient(clientSocket);
-    if (client) {
+	 Client *client = server.FindClient(clientSocket);
+    if (client)
+    {
         std::vector<Client *>::iterator it = server.client.begin();
-        while (it != server.client.end()) {
-            if (*it == client) {
-                it = server.client.erase(it);
-                delete client;
+        while (it != server.client.end())
+        {
+            if (*it == client)
+            {
+                delete client; // Free the memory
+                it = server.client.erase(it); // Remove from the list
                 break;
-			} else
+            }
+            else
                 ++it;
         }
-    } else
+    }
+    else
+    {
         std::cerr << "Client not found for socket: " << clientSocket << std::endl;
+    }
 }
 
 Client* Server::FindClient(int clientSocket)
@@ -88,11 +97,17 @@ int SetupServer(char **argv)
     std::string port = argv[1];
     std::string password = argv[2];
     Server server;
+    int portNum = 0;
+    for (size_t i = 0; i < port.length(); i++) {
+        if (!std::isdigit(port[i]))
+            return (ErrorMngment(INVALID_ARGS));
+    }
+    portNum = std::atoi(port.c_str());
 
-    if (port.empty() || password.empty() || std::atoi(argv[1]) == 0)
+    if (port.empty() || password.empty() || portNum == 0 || portNum > 65535)
         return (ErrorMngment(INVALID_ARGS));
 
-    server.SetPort(std::atoi(argv[1]));
+    server.SetPort(portNum);
     server.SetPassword(argv[2]);
     std::cout << "Password: " << server.GetPassword() << std::endl
               << "Port: " << server.GetPort() << std::endl; // to be removed
@@ -127,17 +142,17 @@ void Server::DeleteChannel(const std::string &name)
         std::cerr << "Error: Channel " << name << " not found." << std::endl;
 }
 
-void StartServer(Server server)
+void StartServer(Server& server)
 {
     staticServer = &server;
     signal(SIGINT, signalHandler);
 
 	int opt = 1;
-    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == -1)
     {
         perror("Socket creation failed");
+        close(serverSocket);
         exit(EXIT_FAILURE);
     }
 
@@ -180,10 +195,18 @@ void StartServer(Server server)
     while (true)
     {
         int poll_count = poll(fds, nfds, 100); // Wait for an event
-        // std::cout << "Poll count: " << poll_count << std::endl;
         if (poll_count < 0)
         {
             perror("Poll failed");
+            // Close all client sockets before breaking
+            for (int i = 1; i < nfds; i++)
+            {
+                if (fds[i].fd != -1)
+                {
+                    close(fds[i].fd);
+                    fds[i].fd = -1;
+                }
+            }
             break;
         }
 
@@ -227,7 +250,15 @@ void StartServer(Server server)
                 if (bytesReceived > 0)
                 {
                     buffer[bytesReceived] = '\0';
-					ParseMessage(buffer, &server, clientSocket);
+                     if (IsValidMessage(buffer)) // Add validation logic
+                    
+                     {
+                         ParseMessage(buffer, &server, clientSocket);
+                     }
+                     else
+                     {
+                         std::cerr << "Invalid message received: " << buffer << std::endl;
+                     }
                 }
                 else if (bytesReceived == 0)
                 {
