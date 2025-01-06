@@ -20,7 +20,7 @@ void SendMsg(Client *client, const std::string &message) {
 
 void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client)
 {
-     std::cout << "JoinChannel called with tokens:" << std::endl;
+    std::cout << "JoinChannel called with tokens:" << std::endl;
     for (size_t i = 0; i < tokens.size(); ++i) {
         std::cout << "Token[" << i << "]: " << tokens[i] << std::endl;
     }
@@ -47,6 +47,11 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
         std::cout << "Channel " << channelName << " created." << std::endl;
     }
 
+	if (channel->isInviteOnly() == 1)
+	{
+		SendErrorMsg(channelName, "Cannot join channel (+i)", client);
+		return ;
+	}
     // Check if the client is already a member
     if (channel->HasMember(client->getNickname())) {
         SendErrorMsg("443", channelName + " :You're already in this channel", client);

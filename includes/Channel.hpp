@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 15:33:05 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/30 16:11:54 by tsoloher         ###   ########.fr       */
+/*   Updated: 2025/01/06 14:53:53 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 #include "Client.hpp"
 #include <vector>
 #include <map>
+
 class Channel
 {
     public:

@@ -21,15 +21,33 @@ std::vector<std::string> split(const std::string& str, char delimiter)
 
 void	SendErrorMsg(std::string prefix, std::string errorType, Client *client)
 {
-	std::string errormsg = prefix + ':' + errorType;
+	std::string errormsg = prefix + ':' + errorType + "\r\n";
 	std::cout << client->GetSocket() << std::endl;
-	send(client->GetSocket(), errormsg.c_str(), errormsg.size(), MSG_EOR);
+	send(client->GetSocket(), errormsg.c_str(), errormsg.size(), 0);
 }
 
 int	ErrorMngment(std::string msg)
 {
 	std::cout << msg << std::endl;
 	return (1);
+}
+
+void	BroadcastToUser(std::vector<std::string> tokens, Server *server, Client *client)
+{
+	if (tokens.size() == 1)
+		return ;
+	else if (tokens.size() == 3)
+	{
+        for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
+        {
+            std::cout << tokens[1] << std::endl;
+            if ((*it)->getNickname() == tokens[1] && (*it)->getNickname() != client->getNickname())
+            {
+                std::string msg = ":" + client->getNickname() + " PRIVMSG " + tokens[1] + " " + tokens[2];
+                SendMsg(*it, msg);
+            }
+        }
+	}
 }
 
 void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server *server) {
@@ -45,31 +63,36 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
         std::cerr << "Error: Channel has no members." << std::endl;
         return;
     }
+	
+	if (tokens[1][0] != '#')
+		BroadcastToUser(tokens, server, client);
+	else
+	{
+		// Construct the IRC-compliant message
+		std::string msg = ":" + client->getNickname() + " PRIVMSG " + channel->getName() + " :";
 
-    // Construct the IRC-compliant message
-    std::string msg = ":" + client->getNickname() + " PRIVMSG " + channel->getName() + " :";
+		for (size_t i = 1; i < tokens.size(); ++i) { // Start from tokens[1] to skip the command itself
+			if (i > 1)
+				msg += " ";
+			msg += tokens[i];
+		}
 
-    for (size_t i = 1; i < tokens.size(); ++i) { // Start from tokens[1] to skip the command itself
-        if (i > 1)
-            msg += " ";
-        msg += tokens[i];
-    }
+		msg += "\r\n"; // Append IRC-compliant line ending
 
-    msg += "\r\n"; // Append IRC-compliant line ending
+		// Broadcast the message to all members of the channel, excluding the sender
+		for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it) {
+			if (it->second == client) {
+				continue; // Skip sending the message to the sender
+			}
 
-    // Broadcast the message to all members of the channel, excluding the sender
-    for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it) {
-        if (it->second == client) {
-            continue; // Skip sending the message to the sender
-        }
+			if (send(it->second->GetSocket(), msg.c_str(), msg.size(), 0) == -1) {
+				std::cerr << "Error: Failed to send message to " << it->first << std::endl;
+			}
+		}
+		// Debug: Log the final broadcasted message
+		std::cout << "Broadcasted message (excluding sender): " << msg << std::endl;
+	}
 
-        if (send(it->second->GetSocket(), msg.c_str(), msg.size(), 0) == -1) {
-            std::cerr << "Error: Failed to send message to " << it->first << std::endl;
-        }
-    }
-
-    // Debug: Log the final broadcasted message
-    std::cout << "Broadcasted message (excluding sender): " << msg << std::endl;
 }
 
 
@@ -109,6 +132,7 @@ void DoCommands(std::string buffer, Client *client, Server *server)
         }
 
         j += i;
+		std::cout << j <<std::endl;
 		switch (j) {
 			case 0:
 				CheckPass(tokens, client, server);
@@ -149,7 +173,7 @@ void DoCommands(std::string buffer, Client *client, Server *server)
                 KickCommand(*server, tokens[1], client, tokens[2]);
                 break;
             case 11:
-                InviteCommand(*server, tokens[1], client, tokens[2]);
+                InviteCommand(*server, tokens[2], client, tokens[1]);
                 break;
 			default:
 				if (!client->inChannel)
