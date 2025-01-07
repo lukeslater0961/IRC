@@ -105,19 +105,23 @@ void KickCommand(Server &server, const std::string &channelName, Client *operato
 {
 	Channel *channel = server.GetChannel(channelName);
 	Client *client = FindClientName(targetNickname, &server);
+	std::string errorMessage;
 
     if (!channel) {
-		SendErrorMsg("403 " + channelName, "No such channel\n", operatorClient);
+		errorMessage = ":localhost 403 " + operatorClient->getNickname() + " " + channelName + " :No such channel\n";
+		SendMsg(operatorClient, errorMessage);
         return;
     }
 
     if (!channel->HasOperator(operatorClient->getNickname())) {
-		SendErrorMsg("482 " + channelName, "You're not channel operator\n", operatorClient);
+		errorMessage = ":localhost 482 " + operatorClient->getNickname() + " " + channelName + " :You're not channel operator\n";
+		SendMsg(operatorClient, errorMessage);
         return;
     }
 
     if (!channel->HasMember(targetNickname)) {
-		SendErrorMsg("441 " + targetNickname + " " + channelName, "They aren't on that channel\n", operatorClient);
+		errorMessage = ":localhost 441 " + targetNickname + " " + channelName + " :They are not on that channel\n";
+		SendMsg(operatorClient, errorMessage);
         return;
     }
 
@@ -134,23 +138,32 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
 {
     Channel *channel = server.GetChannel(channelName);
     Client *targetClient = FindClientName(target, &server);
+	std::string errorMessage;
 
-    if (!targetClient) {
-        SendErrorMsg("401 " + target, "No such client", operatorClient);
-        return;
-    }
+
+
+	if (!targetClient) {
+		errorMessage = ":localhost 401 " + target + " :No such nick/channel\n";
+		SendMsg(operatorClient, errorMessage);
+		return;
+	}
+
     if (!channel) {
-		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
+		errorMessage = ":localhost 403 " + channelName + " :No such channel\n";
+		SendMsg(operatorClient, errorMessage);
         return;
     }
+
 
     if (!channel->HasOperator(operatorClient->getNickname())) {
-		SendErrorMsg("482 " + channelName, "You're not channel operator", operatorClient);
+		errorMessage = ":localhost 482 " + operatorClient->getNickname() + " " + channelName + " :You're not channel operator\n";
+		SendMsg(operatorClient, errorMessage);
         return;
     }
 
     if (channel->HasMember(target)) {
-		SendErrorMsg("443 " + target + " " + channelName, "is already on channel", operatorClient);
+		errorMessage = ":localhost 443 " + target + " " + channelName + " :is already on channel\n";
+		SendMsg(operatorClient, errorMessage);
         return;
     }
     std::cout << "Client " << target << " has been invited to channel " << channelName << "." << std::endl;
@@ -166,14 +179,18 @@ void TopicCommand(Server &server, const std::string &channelName, Client *operat
 {
      Channel *channel = server.GetChannel(channelName);
     std::string newTopic = "";
-    if (!channel) {
-		SendErrorMsg("403 " + channelName, "No such channel", operatorClient);
+	std::string errorMessage;
+    
+	if (!channel) {
+		errorMessage = ":localhost 403 " + channelName + " :No such channel\n";
+		SendMsg(operatorClient, errorMessage);
         return;
     }
 	if (channel->isTopicRestricted())
 	{
     	if (!channel->HasOperator(operatorClient->getNickname())) {
-			SendErrorMsg("482 " + operatorClient->getNickname() + " " + channelName, "You're not channel operator", operatorClient);
+			errorMessage = ":localhost 482 " + operatorClient->getNickname() + " " + channelName + " :You're not channel operator";
+			SendMsg(operatorClient, errorMessage);
     	    return;
     	}
 	}

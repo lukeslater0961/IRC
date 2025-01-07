@@ -51,9 +51,9 @@ void CheckAndExecMode(Channel& channel, const std::string& mode, const std::stri
         channel.setTopicRestriction(addMode);
     } else if (mode == "k") {
         if (addMode) {
-            channel.SetPassword(argument);
+            channel.SetKey(argument);
         } else {
-            channel.clearPassword();
+            channel.clearKey();
         }
     } else if (mode == "o") {
         if (addMode) {
@@ -82,6 +82,7 @@ void SendModeResponse(Server& server, Client* client, const std::string& respons
 
 
 void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string> tokens) {
+    std::string errorMessage;
     if (tokens.size() < 3)
         return;
 
@@ -94,7 +95,8 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
 
     // Check if the client is an operator
     if (!channel->HasOperator(operatorClient->getNickname())) {
-        SendModeResponse(server, operatorClient, ":server 482 " + tokens[1] + " :You're not channel operator\r\n");
+        errorMessage = ":localhost 482 " + operatorClient->getNickname() + " " + tokens[1] + " :You're not channel operator\r\n";
+        SendMsg(operatorClient, errorMessage);
         return;
     }
 
@@ -128,17 +130,18 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
         } else if (mode == 'k') {
             if (addMode) {
                 if (argIndex >= arguments.size()) {
-                    SendModeResponse(server, operatorClient, ":server 461 MODE :Not enough parameters for +k\r\n");
+                     SendModeResponse(server, operatorClient, ":localhost    461 MODE :Not enough parameters for +k\r\n");
                     return;
                 }
-                channel->SetPassword(arguments[argIndex]);
+                channel->SetKey(arguments[argIndex]);
                 ++argIndex;
             } else {
-                channel->clearPassword();
+                channel->clearKey();
             }
         } else if (mode == 'o') {
             if (argIndex >= arguments.size()) {
-                SendModeResponse(server, operatorClient, ":server 461 MODE :Not enough parameters for +o/-o\r\n");
+                std::string response = ":server 461 MODE :Not enough parameters for +o\r\n";
+                channel->broadcast(response, operatorClient);
                 return;
             }
             if (addMode) {

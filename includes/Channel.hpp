@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 15:33:05 by tsoloher          #+#    #+#             */
-/*   Updated: 2025/01/07 13:08:49 by lslater          ###   ########.fr       */
+/*   Updated: 2025/01/07 18:17:16 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,18 +68,23 @@ class Channel
 		std::map<std::string, Client *> GetMembers(void) const {return _members;};
         std::string GetMemberList(void) const;
         
+        std::string GetKey() const {return _key;};
+        void    SetKey(const std::string &key) {_key = key;};
+        void    clearKey() {_key = "";};
 		void	AddToInvited(Client *client);
 		bool	HasInvitedMember(const std::string &nickname) const;
 		void	RemoveInvitedMember(const std::string &nickname);
-
+        bool    HasMode(char mode);
     private :
-        std::string _name;
-        std::string _topic;
-        std::string _password;
-        std::string __currentChannel;
-        int			_userLimit;
-        bool		_inviteOnly;
-        bool		_topicRestriction;
+        std::string                             _name;
+        std::string                             _topic;
+        std::string                             _password;
+        std::string                             __currentChannel;
+        int			                            _userLimit;
+        bool		                            _inviteOnly;
+        bool		                            _topicRestriction;
+        std::string                             _key;
+        std::map<char, std::string> modes;
         std::map <std::string , Client *>		_members;
 		std::map <std::string, Client *>		_invitedMembers;
         std::map <std::string, Client *>		_operators;

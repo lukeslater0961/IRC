@@ -24,9 +24,7 @@ bool IsValidMessage(const char* message)
 {
     // Example validation logic: check if the message is not empty and does not exceed a certain length
     if (message == NULL || strlen(message) == 0 || strlen(message) > BUFFER_SIZE - 1)
-    {
         return false;
-    }
     // Additional validation logic can be added here
     return true;
 }
@@ -248,17 +246,32 @@ void StartServer(Server& server)
                 int bytesReceived = recv(clientSocket, buffer, BUFFER_SIZE - 1, 0);
 
                 if (bytesReceived > 0)
-                {
-                    buffer[bytesReceived] = '\0';
-                     if (IsValidMessage(buffer)) // Add validation logic
-                    
-                     {
-                         ParseMessage(buffer, &server, clientSocket);
-                     }
-                     else
-                     {
-                         std::cerr << "Invalid message received: " << buffer << std::endl;
-                     }
+                {buffer[bytesReceived] = '\0';
+
+            Client *client = server.FindClient(clientSocket);
+            if (!client) {
+                std::cerr << "Client not found for socket: " << clientSocket << std::endl;
+                continue;
+            }
+
+            // Append to the client's command buffer
+            client->GetCommandBuffer() += buffer;
+            
+            std::cout << "command buffer  = " + client->GetCommandBuffer() << std::endl;
+            // Check if the command is complete
+            size_t newlinePos;
+            while ((newlinePos = client->GetCommandBuffer().find('\n')) != std::string::npos) {
+                // Extract the complete command
+                std::string command = client->GetCommandBuffer().substr(0, newlinePos);
+                client->GetCommandBuffer().erase(0, newlinePos + 1);
+
+                // Process the command
+                if (IsValidMessage(command.c_str())) {
+                    ParseMessage(command.c_str(), &server, clientSocket);
+                } else {
+                    std::cerr << "Invalid message received: " << command << std::endl;
+                }
+            }
                 }
                 else if (bytesReceived == 0)
                 {

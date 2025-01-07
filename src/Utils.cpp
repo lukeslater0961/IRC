@@ -132,7 +132,6 @@ void DoCommands(std::string buffer, Client *client, Server *server)
         }
 
         j += i;
-		std::cout << j <<std::endl;
 		switch (j) {
 			case 0:
 				CheckPass(tokens, client, server);

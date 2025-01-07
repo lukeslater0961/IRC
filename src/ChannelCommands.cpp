@@ -20,10 +20,7 @@ void SendMsg(Client *client, const std::string &message) {
 
 void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client)
 {
-    std::cout << "JoinChannel called with tokens:" << std::endl;
-    for (size_t i = 0; i < tokens.size(); ++i) {
-        std::cout << "Token[" << i << "]: " << tokens[i] << std::endl;
-    }
+
 
     if (tokens.size() < 2) {
         SendErrorMsg("461", "JOIN :Not enough parameters", client);
@@ -50,9 +47,18 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
         SendErrorMsg(channelName, "Cannot join channel (+i)", client);
         return;
     }
+    if (channel->HasMode('k'))
+    {
+        std::cout << "Channel has a key" << std::endl;
+        if (tokens.size() < 3 || tokens[2] != channel->GetKey()) {
+            SendErrorMsg("475", channelName + " :Cannot join channel (+k)", client);
+            return;
+        }
+    }
 
     if (channel->HasMember(client->getNickname())) {
-        SendErrorMsg("443", channelName + " :You're already in this channel", client);
+        std::string errorMessage = ":localhost 443 " + client->getNickname() + " " + channelName + " :is already on channel";
+        SendMsg(client, errorMessage);
         return;
     }
 

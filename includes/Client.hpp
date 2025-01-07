@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:21:21 by tsoloher          #+#    #+#             */
-/*   Updated: 2025/01/07 11:09:13 by tsoloher         ###   ########.fr       */
+/*   Updated: 2025/01/07 17:50:52 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,15 +49,15 @@ class Client{
 
 		void		SetCurrentChannel(std::string name){this->_currentChannel = name;}
 		std::string GetCurrentChannel(void){return (this->_currentChannel);}
-		// bool		isInvited(std::string channelName);
+		std::string &GetCommandBuffer() { return _commandBuffer; }
+    	void ClearCommandBuffer() { _commandBuffer.clear(); }
 
 		bool	inChannel;
-		// std::vector<std::string> _invitedChannels;
 	private:
 		std::string _currentChannel;
 		std::string _nickname;
 		std::string _username;
-		
+		std::string _commandBuffer;
 		bool          _password;
 		int           _socket;
 };
