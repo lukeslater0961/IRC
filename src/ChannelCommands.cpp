@@ -78,4 +78,5 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
 
     std::cout << "managed to broadcast everything" << std::endl;
     client->inChannel = true;
+	channel->RemoveInvitedMember(client->getNickname());
 }

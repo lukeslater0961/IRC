@@ -134,6 +134,7 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
 {
     Channel *channel = server.GetChannel(channelName);
     Client *targetClient = FindClientName(target, &server);
+
     if (!targetClient) {
         SendErrorMsg("401 " + target, "No such client", operatorClient);
         return;
@@ -155,6 +156,9 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
     std::cout << "Client " << target << " has been invited to channel " << channelName << "." << std::endl;
     std::string msg = ":" + operatorClient->getNickname() + "!" + operatorClient->getUsername() + "@localhost INVITE " + target + " " + channelName + "\n";
     channel->broadcast(msg, targetClient);
+	std::string inviteMsg = ":" + operatorClient->getNickname() + "!" + operatorClient->getUsername() + "@localhost INVITE " + target + " :" + channelName;
+	SendMsg(targetClient, inviteMsg);
+	channel->AddToInvited(targetClient);	
 }
 
 

@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2025/01/07 11:11:06 by tsoloher         ###   ########.fr       */
+/*   Updated: 2025/01/07 13:11:54 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ bool Channel::HasOperator(const std::string &nickname) const
 
 void Channel::broadcast(const std::string &message, Client *client)
 {
-    (void)client;
     for (std::map<std::string, Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
     {
         if (it->second != client )
@@ -82,21 +81,37 @@ void Channel::broadcast(const std::string &message, Client *client)
     }
 }
 
-
 std::string Channel::GetMemberList() const
 {
     std::string memberList = "";
     for (std::map<std::string, Client*>::const_iterator it = _members.begin(); it != _members.end(); ++it) {
-        if (Channel::HasOperator(it->first)) {
+        if (Channel::HasOperator(it->first))
             memberList += "@";
-        }
         memberList += it->first + " ";
     }
     return memberList;
 }
 
+void	Channel::RemoveInvitedMember(const std::string &nickname)
+{
+	_invitedMembers.erase(nickname);
+}
+
+bool Channel::HasInvitedMember(const std::string &nickname) const
+{
+    return _invitedMembers.find(nickname) != _invitedMembers.end();
+}
+
+void	Channel::AddToInvited(Client *client)
+{
+    if (!HasInvitedMember(client->getNickname()))
+        _invitedMembers[client->getNickname()] = client;
+}
+
 bool Channel::isInvited(std::string nickname)
 {
-    (void)nickname;
-    return false;
+	if (!HasInvitedMember(nickname))
+		return false;
+	else
+		return true;
 }
