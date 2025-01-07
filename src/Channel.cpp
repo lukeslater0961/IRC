@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2025/01/03 11:38:45 by tsoloher         ###   ########.fr       */
+/*   Updated: 2025/01/07 11:11:06 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,4 +93,10 @@ std::string Channel::GetMemberList() const
         memberList += it->first + " ";
     }
     return memberList;
+}
+
+bool Channel::isInvited(std::string nickname)
+{
+    (void)nickname;
+    return false;
 }

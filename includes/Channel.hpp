@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 15:33:05 by tsoloher          #+#    #+#             */
-/*   Updated: 2025/01/06 14:53:53 by lslater          ###   ########.fr       */
+/*   Updated: 2025/01/07 11:09:53 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ class Channel
         void setTopicRestriction(bool mode) {_topicRestriction = mode;}; 
     
         bool isTopicRestricted() const { return _topicRestriction;};    
-
+        bool isInvited(std::string nickname);
         std::string getName() const {return this->_name;};
         void broadcast(const std::string &message, Client *client);
 		std::map<std::string, Client *> GetMembers(void) const {return _members;};

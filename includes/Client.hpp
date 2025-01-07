@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:21:21 by tsoloher          #+#    #+#             */
-/*   Updated: 2024/12/16 14:11:51 by lslater          ###   ########.fr       */
+/*   Updated: 2025/01/07 11:09:13 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <netinet/in.h>
 #include <poll.h>
 #include <cstring>
+#include <vector>
 
 class Client{
 
@@ -48,13 +49,15 @@ class Client{
 
 		void		SetCurrentChannel(std::string name){this->_currentChannel = name;}
 		std::string GetCurrentChannel(void){return (this->_currentChannel);}
+		// bool		isInvited(std::string channelName);
 
 		bool	inChannel;
-
+		// std::vector<std::string> _invitedChannels;
 	private:
 		std::string _currentChannel;
 		std::string _nickname;
 		std::string _username;
+		
 		bool          _password;
 		int           _socket;
 };
