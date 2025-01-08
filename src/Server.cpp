@@ -9,23 +9,19 @@ static int serverSocket = -1;
 static Server *staticServer = NULL;
 
 Server::Server() {}
-Server::~Server() {
-}
+Server::~Server() {}
 
 void Server::AddClient(int clientSocket)
 {
-   Client *newClient = new Client();
+	Client *newClient = new Client();
     newClient->SetSocket(clientSocket);
     this->client.push_back(newClient);
-    std::cout << "Added client with socket: " << clientSocket << std::endl;
 }
 
 bool IsValidMessage(const char* message)
 {
-    // Example validation logic: check if the message is not empty and does not exceed a certain length
     if (message == NULL || strlen(message) == 0 || strlen(message) > BUFFER_SIZE - 1)
         return false;
-    // Additional validation logic can be added here
     return true;
 }
 
@@ -57,7 +53,7 @@ void signalHandler(int signal)
 
 void	DeleteClient(int clientSocket, Server &server)
 {
-	 Client *client = server.FindClient(clientSocket);
+	Client *client = server.FindClient(clientSocket);
     if (client)
     {
         std::vector<Client *>::iterator it = server.client.begin();
@@ -74,9 +70,7 @@ void	DeleteClient(int clientSocket, Server &server)
         }
     }
     else
-    {
         std::cerr << "Client not found for socket: " << clientSocket << std::endl;
-    }
 }
 
 Client* Server::FindClient(int clientSocket)
@@ -196,7 +190,6 @@ void StartServer(Server& server)
         if (poll_count < 0)
         {
             perror("Poll failed");
-            // Close all client sockets before breaking
             for (int i = 1; i < nfds; i++)
             {
                 if (fds[i].fd != -1)
@@ -208,7 +201,6 @@ void StartServer(Server& server)
             break;
         }
 
-        // Check for new incoming connections
         if (fds[0].revents & POLLIN)
         {
             sockaddr_in client_address;
@@ -224,7 +216,6 @@ void StartServer(Server& server)
 
             std::cout << "New connection accepted.\n";
 
-            // Add client socket to the poll array
             for (int i = 1; i < MAX_CLIENTS; i++)
             {
                 if (fds[i].fd == -1)
@@ -254,19 +245,14 @@ void StartServer(Server& server)
                 continue;
             }
 
-            // Append to the client's command buffer
             client->GetCommandBuffer() += buffer;
             
-            std::cout << "command buffer  = " + client->GetCommandBuffer() << std::endl;
-            // Check if the command is complete
             size_t newlinePos;
             while ((newlinePos = client->GetCommandBuffer().find('\n')) != std::string::npos) {
-                // Extract the complete command
                 std::string command = client->GetCommandBuffer().substr(0, newlinePos);
 				if (!command.empty())
 					client->GetCommandBuffer().erase(0, newlinePos + 1);
 
-                // Process the command
                 if (IsValidMessage(command.c_str())) {
                     ParseMessage(command.c_str(), &server, clientSocket);
                 } else

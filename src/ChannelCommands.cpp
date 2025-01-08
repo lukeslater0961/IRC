@@ -4,37 +4,31 @@
 #include <sys/socket.h>
 
 
-void SendMsg(Client *client, const std::string &message) {
+void SendMsg(Client *client, const std::string &message)
+{
     if (!client) {
         std::cerr << "Error: Null client pointer in SendMsg." << std::endl;
         return;
     }
 
-    std::string msgToSend = message + "\r\n"; // Append IRC standard line ending
-	std::cout << msgToSend << std::endl;
-    int socket = client->GetSocket();         // Get the client's socket
+    std::string msgToSend = message + "\r\n";
+    int socket = client->GetSocket();
 
     if (send(socket, msgToSend.c_str(), msgToSend.length(), 0) == -1)
         std::cerr << "Error: Failed to send message to client " << client->getNickname() << std::endl;
 }
 
-void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client)
+int	HandleErrors(Client *client, std::string channelName, Server *server, std::vector<std::string> tokens )
 {
-    if (tokens.size() < 2) {
-        SendErrorMsg("461", "JOIN :Not enough parameters", client);
-        return;
-    }
+	Channel *channel;
 
-    std::string channelName = tokens[1];
-
-    std::cout << "Channel name: " << channelName[0] << std::endl;
-    if (channelName.empty() ||  channelName[0] != '#') {
+   if (channelName.empty() ||  channelName[0] != '#') {
         std::string errorMessage = ":localhost 403 " + client->getNickname() + " " + channelName + " :Invalid channel name";
         SendMsg(client, errorMessage);
-        return;
+        return 1;
     }
 
-    Channel *channel = server->GetChannel(channelName);
+    channel = server->GetChannel(channelName);
     if (!channel) {
         server->CreateChannel(channelName);
         channel = server->GetChannel(channelName);
@@ -43,34 +37,52 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
 
     if (channel->isInviteOnly() == 1 && !channel->isInvited(client->getNickname())) {
         SendErrorMsg(channelName, "Cannot join channel (+i)", client);
-        return;
+        return 1;
     }
+
     if (!channel->GetKey().empty() && tokens.size() < 3)
     {
         if (tokens.size() < 3 || tokens[2] != channel->GetKey()) {
             SendErrorMsg("475", channelName + " :Cannot join channel (+k)", client);
-            return;
+			return 1;
         }
     }else if (tokens.size() == 3)
 	{
 		if (tokens[2] != channel->GetKey())
 		{
 			SendErrorMsg("475", channelName + " :Cannot join channel (+k)", client);
-			return;
+			return 1;
 		}
 	}
-
 
     if (channel->HasMember(client->getNickname())) {
         std::string errorMessage = ":localhost 443 " + client->getNickname() + " " + channelName + " :is already on channel";
         SendMsg(client, errorMessage);
+        return 1;
+    }
+	return 0;
+}
+
+void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client)
+{
+	Channel *channel;
+	std::string joinMessage;
+
+    if (tokens.size() < 2) {
+        SendErrorMsg("461", "JOIN :Not enough parameters", client);
         return;
     }
 
+    std::string channelName = tokens[1];
+	if (HandleErrors(client, channelName, server, tokens))
+		return;
+	else
+		channel = server->GetChannel(channelName);
+   
     channel->AddMember(client);
     client->SetCurrentChannel(channelName);
 
-    std::string joinMessage = ":" + client->getNickname() + " JOIN " + channelName;
+    joinMessage = ":" + client->getNickname() + " JOIN " + channelName;
 
     SendMsg(client, joinMessage);
 

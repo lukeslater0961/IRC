@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2025/01/08 10:18:13 by lslater          ###   ########.fr       */
+/*   Updated: 2025/01/08 11:48:19 by lslater          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,7 @@ Channel::Channel(const std::string &name)
     _topicRestriction = false;
 }
 
-Channel::~Channel()
-{
-    // _members.clear();
-    // _operators.clear();
-}
+Channel::~Channel(){}
 
 
 void Channel::AddMember(Client *client)

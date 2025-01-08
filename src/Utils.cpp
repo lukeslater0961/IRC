@@ -15,7 +15,6 @@ std::vector<std::string> split(const std::string& str, char delimiter)
             token.erase(token.size() - 1);
         result.push_back(token);
     }
-
     return result;
 }
 
@@ -57,7 +56,6 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
         return;
     }
 
-    // Retrieve the members of the channel
     std::map<std::string, Client *> members = channel->GetMembers();
     if (members.empty()) {
         std::cerr << "Error: Channel has no members." << std::endl;
@@ -68,10 +66,9 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 		BroadcastToUser(tokens, server, client);
 	else
 	{
-		// Construct the IRC-compliant message
 		std::string msg = ":" + client->getNickname() + " PRIVMSG " + channel->getName() + " :";
 
-		for (size_t i = 1; i < tokens.size(); ++i) { // Start from tokens[1] to skip the command itself
+		for (size_t i = 1; i < tokens.size(); ++i) { 
 			if (i > 1)
 				msg += " ";
 			msg += tokens[i];
@@ -79,15 +76,12 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 
 		msg += "\r\n"; // Append IRC-compliant line ending
 
-		// Broadcast the message to all members of the channel, excluding the sender
 		for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it) {
-			if (it->second == client) {
+			if (it->second == client)
 				continue; // Skip sending the message to the sender
-			}
 
-			if (send(it->second->GetSocket(), msg.c_str(), msg.size(), 0) == -1) {
+			if (send(it->second->GetSocket(), msg.c_str(), msg.size(), 0) == -1)
 				std::cerr << "Error: Failed to send message to " << it->first << std::endl;
-			}
 		}
 		// Debug: Log the final broadcasted message
 		std::cout << "Broadcasted message (excluding sender): " << msg << std::endl;
