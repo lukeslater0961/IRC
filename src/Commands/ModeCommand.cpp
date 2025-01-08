@@ -44,7 +44,8 @@ int ParseValues(const std::vector<std::string>& tokens, std::string& modes, std:
     return 0; // Success
 }
 
-void CheckAndExecMode(Channel& channel, const std::string& mode, const std::string& argument, bool addMode) {
+void CheckAndExecMode(Channel& channel, const std::string& mode, const std::string& argument, bool addMode)
+{
     if (mode == "i") {
         channel.setInviteOnly(addMode);
     } else if (mode == "t") {
@@ -71,22 +72,21 @@ void CheckAndExecMode(Channel& channel, const std::string& mode, const std::stri
     }
 }
 
-
-
-void SendModeResponse(Server& server, Client* client, const std::string& response) {
+void SendModeResponse(Server& server, Client* client, const std::string& response)
+{
     (void)server;
-    if (send(client->GetSocket(), response.c_str(), response.length(), 0) == -1) {
+    if (send(client->GetSocket(), response.c_str(), response.length(), 0) == -1)
         std::cerr << "Error: Failed to send MODE response to client " << client->getNickname() << std::endl;
-    }
 }
 
 
-void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string> tokens) {
+void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string> tokens)
+{
     std::string errorMessage;
+
     if (tokens.size() < 3)
         return;
 
-    // Get the channel
     Channel *channel = server.GetChannel(tokens[1]);
     if (!channel) {
         SendModeResponse(server, operatorClient, ":server 403 " + tokens[1] + " :No such channel\r\n");
@@ -103,9 +103,8 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
     // Parse the mode string and arguments
     std::string modeString = tokens[2];
     std::vector<std::string> arguments;
-    for (size_t i = 3; i < tokens.size(); ++i) {
+    for (size_t i = 3; i < tokens.size(); ++i)
         arguments.push_back(tokens[i]);
-    }
 
     bool addMode = true;
     size_t argIndex = 0;
@@ -130,7 +129,9 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
         } else if (mode == 'k') {
             if (addMode) {
                 if (argIndex >= arguments.size()) {
-                     SendModeResponse(server, operatorClient, ":localhost    461 MODE :Not enough parameters for +k\r\n");
+					std::string errorMessage = ":localhost 696 " + operatorClient->getNickname() +
+                                " " + channel->getName() + " k * :You must specify a parameter for the key mode. Syntax: <key>.";
+					SendMsg(operatorClient, errorMessage);
                     return;
                 }
                 channel->SetKey(arguments[argIndex]);
@@ -140,31 +141,33 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
             }
         } else if (mode == 'o') {
             if (argIndex >= arguments.size()) {
-                std::string response = ":server 461 MODE :Not enough parameters for +o\r\n";
-                channel->broadcast(response, operatorClient);
+               	std::string errorMessage = ":localhost 696 " + operatorClient->getNickname() +
+                                " " + channel->getName() + " o * :You must specify a parameter for the key mode. Syntax: <nick>.";
+					SendMsg(operatorClient, errorMessage);
                 return;
             }
-            if (addMode) {
+            if (addMode)
                 channel->AddOperator(arguments[argIndex]);
-            } else {
+            else
                 channel->RemoveOperator(arguments[argIndex]);
-            }
             ++argIndex;
         } else if (mode == 'l') {
             if (addMode) {
                 if (argIndex >= arguments.size()) {
-                    SendModeResponse(server, operatorClient, ":server 461 MODE :Not enough parameters for +l\r\n");
-                    return;
+                    std::string errorMessage = ":localhost 696 " + operatorClient->getNickname() +
+                                " " + channel->getName() + " l * :You must specify a parameter for the key mode. Syntax: <limit>.";
+					SendMsg(operatorClient, errorMessage);                    return;
                 }
                 int limit = std::atoi(arguments[argIndex].c_str());
                 channel->setUserLimit(limit);
                 ++argIndex;
-            } else {
+            } else
                 channel->clearUserLimit();
-            }
-        } else {
-            SendModeResponse(server, operatorClient, ":server 472 " + std::string(1, mode) + " :Invalid mode\r\n");
-        }
+        } else
+		{
+			SendModeResponse(server, operatorClient, ":server 472 " + std::string(1, mode) + " :Invalid mode\r\n");
+			return;
+		}
     }
 
     // Send mode change acknowledgment to the client

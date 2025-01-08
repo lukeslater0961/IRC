@@ -263,14 +263,14 @@ void StartServer(Server& server)
             while ((newlinePos = client->GetCommandBuffer().find('\n')) != std::string::npos) {
                 // Extract the complete command
                 std::string command = client->GetCommandBuffer().substr(0, newlinePos);
-                client->GetCommandBuffer().erase(0, newlinePos + 1);
+				if (!command.empty())
+					client->GetCommandBuffer().erase(0, newlinePos + 1);
 
                 // Process the command
                 if (IsValidMessage(command.c_str())) {
                     ParseMessage(command.c_str(), &server, clientSocket);
-                } else {
+                } else
                     std::cerr << "Invalid message received: " << command << std::endl;
-                }
             }
                 }
                 else if (bytesReceived == 0)

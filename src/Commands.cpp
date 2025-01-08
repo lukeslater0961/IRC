@@ -140,8 +140,6 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
     Client *targetClient = FindClientName(target, &server);
 	std::string errorMessage;
 
-
-
 	if (!targetClient) {
 		errorMessage = ":localhost 401 " + target + " :No such nick/channel\n";
 		SendMsg(operatorClient, errorMessage);
@@ -153,7 +151,6 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
 		SendMsg(operatorClient, errorMessage);
         return;
     }
-
 
     if (!channel->HasOperator(operatorClient->getNickname())) {
 		errorMessage = ":localhost 482 " + operatorClient->getNickname() + " " + channelName + " :You're not channel operator\n";
