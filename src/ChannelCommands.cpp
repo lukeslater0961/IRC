@@ -50,7 +50,7 @@ int	HandleErrors(Client *client, std::string channelName, Server *server, std::v
 	{
 		if (tokens[2] != channel->GetKey())
 		{
-			SendErrorMsg("475", channelName + " :Cannot join channel (+k)", client);
+			SendErrorMsg("475", channelName + " :Invalid passkey", client);
 			return 1;
 		}
 	}
@@ -99,7 +99,6 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
 
     channel->broadcast(joinMessage, client);
 
-    std::cout << "managed to broadcast everything" << std::endl;
     client->inChannel = true;
 	channel->RemoveInvitedMember(client->getNickname());
 }

@@ -39,7 +39,6 @@ void	BroadcastToUser(std::vector<std::string> tokens, Server *server, Client *cl
 	{
         for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
         {
-            std::cout << tokens[1] << std::endl;
             if ((*it)->getNickname() == tokens[1] && (*it)->getNickname() != client->getNickname())
             {
                 std::string msg = ":" + client->getNickname() + " PRIVMSG " + tokens[1] + " " + tokens[2];

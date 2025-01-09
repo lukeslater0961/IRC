@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:54:27 by tsoloher          #+#    #+#             */
-/*   Updated: 2025/01/08 11:48:19 by lslater          ###   ########.fr       */
+/*   Updated: 2025/01/09 11:14:30 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,9 +110,4 @@ bool Channel::isInvited(std::string nickname)
 		return false;
 	else
 		return true;
-}
-
-bool Channel::HasMode(char mode)
-{
-    return modes.find(mode) != modes.end();
 }

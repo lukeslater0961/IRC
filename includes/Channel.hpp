@@ -6,7 +6,7 @@
 /*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 15:33:05 by tsoloher          #+#    #+#             */
-/*   Updated: 2025/01/07 18:17:16 by tsoloher         ###   ########.fr       */
+/*   Updated: 2025/01/09 11:15:42 by tsoloher         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ class Channel
 		void	AddToInvited(Client *client);
 		bool	HasInvitedMember(const std::string &nickname) const;
 		void	RemoveInvitedMember(const std::string &nickname);
-        bool    HasMode(char mode);
     private :
         std::string                             _name;
         std::string                             _topic;
@@ -84,7 +83,6 @@ class Channel
         bool		                            _inviteOnly;
         bool		                            _topicRestriction;
         std::string                             _key;
-        std::map<char, std::string> modes;
         std::map <std::string , Client *>		_members;
 		std::map <std::string, Client *>		_invitedMembers;
         std::map <std::string, Client *>		_operators;
