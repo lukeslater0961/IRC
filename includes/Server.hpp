@@ -34,5 +34,13 @@ class Server{
 int		SetupServer(char **argv);
 void	StartServer(Server &server);
 void	ParseMessage(std::string buffer, Server *server, int clientSocket);
+
+void SetupPoll(struct pollfd* fds);
+bool PollSockets(struct pollfd* fds, int nfds);
+void HandleNewConnection(struct pollfd* fds, int& nfds, Server& server);
+void ProcessClientSockets(struct pollfd* fds, int nfds, Server& server, char* buffer);
+void HandleClientMessage(int clientSocket, Server& server, char* buffer, int bytesReceived);
+void HandleClientDisconnection(struct pollfd* fds, int index, int clientSocket, Server& server);
+void InitializeServer(Server& server);
 #endif
 

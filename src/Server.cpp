@@ -154,14 +154,34 @@ void Server::DeleteChannel(const std::string &name)
         std::cerr << "Error: Channel " << name << " not found." << std::endl;
 }
 
-void StartServer(Server& server)
-{
+void StartServer(Server& server) {
+    InitializeServer(server);
+    
+    struct pollfd fds[MAX_CLIENTS];
+    int nfds = 1;
+    
+    SetupPoll(fds);
+
+    char buffer[BUFFER_SIZE];
+
+    while (true) {
+        if (!PollSockets(fds, nfds)) {
+            break;
+        }
+
+        HandleNewConnection(fds, nfds, server);
+        ProcessClientSockets(fds, nfds, server, buffer);
+    }
+
+    close(serverSocket);
+}
+
+void InitializeServer(Server& server) {
     staticServer = &server;
     signal(SIGINT, signalHandler);
-	int opt = 1;
+
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverSocket == -1)
-    {
+    if (serverSocket == -1) {
         perror("Socket creation failed");
         close(serverSocket);
         exit(EXIT_FAILURE);
@@ -172,124 +192,117 @@ void StartServer(Server& server)
     server_address.sin_port = htons(server.GetPort());
     server_address.sin_addr.s_addr = INADDR_ANY;
 
-	setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    if (bind(serverSocket, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
-    {
+    int opt = 1;
+    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    if (bind(serverSocket, (struct sockaddr*)&server_address, sizeof(server_address)) < 0) {
         perror("Bind failed");
         close(serverSocket);
         exit(EXIT_FAILURE);
     }
 
-    if (listen(serverSocket, SOMAXCONN) < 0)
-    {
+    if (listen(serverSocket, SOMAXCONN) < 0) {
         perror("Listen failed");
         close(serverSocket);
         exit(EXIT_FAILURE);
     }
 
     std::cout << "Server listening on port " << server.GetPort() << std::endl;
+}
 
-    struct pollfd fds[MAX_CLIENTS];
-    int nfds = 1;
-    
-    fds[0].fd = serverSocket;    // Server socket
-    fds[0].events = POLLIN;      // Monitor for incoming connections
+void SetupPoll(struct pollfd* fds) {
+    fds[0].fd = serverSocket;
+    fds[0].events = POLLIN;
 
-    for (int i = 1; i < MAX_CLIENTS; i++)
-       {
-        fds[i].revents = 0;          // Initialize client slots as unused
-        fds[i].fd = -1;          // Initialize client slots as unused
-       }
-    
-    char buffer[BUFFER_SIZE];
+    for (int i = 1; i < MAX_CLIENTS; i++) {
+        fds[i].fd = -1;
+        fds[i].revents = 0;
+    }
+}
 
-    while (true)
-    {
-        int poll_count = poll(fds, nfds, 100); // Wait for an event
-        if (poll_count < 0)
-        {
-            if (errno == EINTR)
-                break;
-            else {
-                perror("Poll failed");
-                break;
-            }
+bool PollSockets(struct pollfd* fds, int nfds) {
+    int poll_count = poll(fds, nfds, 100);
+    if (poll_count < 0) {
+        if (errno == EINTR)
+            return false;
+
+        perror("Poll failed");
+        return false;
+    }
+    return true;
+}
+
+void HandleNewConnection(struct pollfd* fds, int& nfds, Server& server) {
+    if (fds[0].revents & POLLIN) {
+        sockaddr_in client_address;
+        socklen_t client_len = sizeof(client_address);
+        int clientSocket = accept(serverSocket, (struct sockaddr*)&client_address, &client_len);
+
+        if (clientSocket < 0) {
+            perror("Accept failed");
+            return;
         }
 
-        if (fds[0].revents & POLLIN)
-        {
-            sockaddr_in client_address;
-            socklen_t client_len = sizeof(client_address);
-            int clientSocket = accept(serverSocket, (struct sockaddr *)&client_address, &client_len);
-            server.AddClient(clientSocket);
-            if (clientSocket < 0)
-            {
-                perror("Accept failed");
-                continue;
-            }
+        server.AddClient(clientSocket);
+        std::cout << "New connection accepted.\n";
 
-            std::cout << "New connection accepted.\n";
-
-            for (int i = 1; i < MAX_CLIENTS; i++)
-            {
-                if (fds[i].fd == -1)
-                {
-                    fds[i].fd = clientSocket;
-                    fds[i].events = POLLIN; // Monitor for incoming data
-                    nfds = std::max(nfds, i + 1);
-                    break;
-                }
-            }
-        }
-        
-        // Check for events on existing client sockets
-        for (int i = 1; i < nfds; i++)
-        {
-            if (fds[i].fd != -1 && fds[i].revents & POLLIN)
-            {
-                int clientSocket = fds[i].fd;
-                int bytesReceived = recv(clientSocket, buffer, BUFFER_SIZE - 1, 0);
-
-                if (bytesReceived > 0)
-                {buffer[bytesReceived] = '\0';
-
-            Client *client = server.FindClient(clientSocket);
-            if (!client) {
-                std::cerr << "Client not found for socket: " << clientSocket << std::endl;
-                continue;
-            }
-
-            client->GetCommandBuffer() += buffer;
-            
-            size_t newlinePos;
-            while ((newlinePos = client->GetCommandBuffer().find('\n')) != std::string::npos) {
-                std::string command = client->GetCommandBuffer().substr(0, newlinePos);
-				if (!command.empty())
-					client->GetCommandBuffer().erase(0, newlinePos + 1);
-
-                if (IsValidMessage(command.c_str())) {
-                    ParseMessage(command.c_str(), &server, clientSocket);
-                } else
-                    std::cerr << "Invalid message received: " << command << std::endl;
-            }
-                }
-                else if (bytesReceived == 0)
-                {
-                    std::cout << "Client disconnected.\n";
-					DeleteClient(clientSocket, server);
-                    if (clientSocket != -1)
-                        close(clientSocket);
-                    fds[i].fd = -1;
-                }
-                else
-                {
-                    perror("Recv failed");
-                    if (clientSocket != -1)
-                        close(clientSocket);
-                    fds[i].fd = -1;
-                }
+        for (int i = 1; i < MAX_CLIENTS; i++) {
+            if (fds[i].fd == -1) {
+                fds[i].fd = clientSocket;
+                fds[i].events = POLLIN;
+                nfds = std::max(nfds, i + 1);
+                break;
             }
         }
     }
-    close(serverSocket);
 }
+
+void ProcessClientSockets(struct pollfd* fds, int nfds, Server& server, char* buffer) {
+    for (int i = 1; i < nfds; i++) {
+        if (fds[i].fd != -1 && fds[i].revents & POLLIN) {
+            int clientSocket = fds[i].fd;
+            int bytesReceived = recv(clientSocket, buffer, BUFFER_SIZE - 1, 0);
+
+            if (bytesReceived > 0) {
+                HandleClientMessage(clientSocket, server, buffer, bytesReceived);
+            } else {
+                HandleClientDisconnection(fds, i, clientSocket, server);
+            }
+        }
+    }
+}
+
+void HandleClientMessage(int clientSocket, Server& server, char* buffer, int bytesReceived) {
+    buffer[bytesReceived] = '\0';
+
+    Client* client = server.FindClient(clientSocket);
+    if (!client) {
+        std::cerr << "Client not found for socket: " << clientSocket << std::endl;
+        return;
+    }
+
+    client->GetCommandBuffer() += buffer;
+
+    size_t newlinePos;
+    while ((newlinePos = client->GetCommandBuffer().find('\n')) != std::string::npos) {
+        std::string command = client->GetCommandBuffer().substr(0, newlinePos);
+        client->GetCommandBuffer().erase(0, newlinePos + 1);
+
+        if (IsValidMessage(command.c_str())) {
+            ParseMessage(command.c_str(), &server, clientSocket);
+        } else {
+            std::cerr << "Invalid message received: " << command << std::endl;
+        }
+    }
+}
+
+void HandleClientDisconnection(struct pollfd* fds, int index, int clientSocket, Server& server) {
+    std::cout << "Client disconnected.\n";
+    DeleteClient(clientSocket, server);
+
+    if (clientSocket != -1) {
+        close(clientSocket);
+    }
+    fds[index].fd = -1;
+}
+
