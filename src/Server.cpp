@@ -7,7 +7,7 @@
 
 static int serverSocket = -1;
 static Server *staticServer = NULL;
-bool keepRunning = true;
+
 Server::Server() {
 }
 Server::~Server() {
@@ -89,7 +89,6 @@ void signalHandler(int signal)
                 DeleteClient(sockets[i], *staticServer);
             }
         }
-        keepRunning = false;
     }
 }
 
@@ -204,7 +203,7 @@ void StartServer(Server& server)
     
     char buffer[BUFFER_SIZE];
 
-    while (keepRunning)
+    while (true)
     {
         int poll_count = poll(fds, nfds, 100); // Wait for an event
         if (poll_count < 0)
