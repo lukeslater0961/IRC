@@ -89,6 +89,8 @@ void signalHandler(int signal)
                 DeleteClient(sockets[i], *staticServer);
             }
         }
+        staticServer->~Server();
+        exit(EXIT_SUCCESS);
     }
 }
 
