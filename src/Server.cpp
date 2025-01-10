@@ -3,17 +3,35 @@
 #include <cctype>
 #include <csignal>
 #include <algorithm>
-
+#include <errno.h>
 
 static int serverSocket = -1;
 static Server *staticServer = NULL;
-
-Server::Server() {}
-Server::~Server() {}
+bool keepRunning = true;
+Server::Server() {
+}
+Server::~Server() {
+   for (std::vector<Client*>::iterator it = this->client.begin(); it != this->client.end(); ++it) {
+        delete *it;
+    }
+    this->client.clear(); // Ensure the vector is empty
+    for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+        delete it->second;
+    }
+    _channels.clear();
+    
+}
 
 void Server::AddClient(int clientSocket)
 {
 	Client *newClient = new Client();
+    if (!newClient)
+    {
+        perror("Memory allocation failed");
+        if (clientSocket != -1)
+            close(clientSocket);
+        return;
+    }
     newClient->SetSocket(clientSocket);
     this->client.push_back(newClient);
 }
@@ -23,32 +41,6 @@ bool IsValidMessage(const char* message)
     if (message == NULL || strlen(message) == 0 || strlen(message) > BUFFER_SIZE - 1)
         return false;
     return true;
-}
-
-void signalHandler(int signal)
-{
-    if (signal == SIGINT) {
-        std::cout << "\nCtrl+C detected. Shutting down server gracefully..." << std::endl;
-        if (serverSocket != -1)
-		{
-            close(serverSocket);
-            std::cout << "Server socket closed." << std::endl;
-        }
-
-        if (staticServer)
-		{
-			for (std::vector<Client*>::iterator it = staticServer->client.begin(); it != staticServer->client.end(); ++it) {
-				Client *client = *it;
-				if (client)
-				{
-                    std::cout << "Cleaning up client with socket: " << client->GetSocket() << std::endl;
-                    close(client->GetSocket());
-                    delete client;
-                }
-            }
-        }
-        exit(0);
-    }
 }
 
 void	DeleteClient(int clientSocket, Server &server)
@@ -61,17 +53,46 @@ void	DeleteClient(int clientSocket, Server &server)
         {
             if (*it == client)
             {
-                delete client; // Free the memory
                 it = server.client.erase(it); // Remove from the list
                 break;
             }
             else
                 ++it;
         }
+        delete client;
     }
     else
         std::cerr << "Client not found for socket: " << clientSocket << std::endl;
 }
+
+void signalHandler(int signal)
+{
+    if (signal == SIGINT) {
+        std::cout << "\nCtrl+C detected. Shutting down server gracefully..." << std::endl;
+        if (serverSocket != -1) {
+            close(serverSocket);
+            std::cout << "Server socket closed." << std::endl;
+        }
+    
+        if (staticServer) {
+            std::vector<int> sockets;
+            for (std::vector<Client*>::iterator it = staticServer->client.begin(); it != staticServer->client.end(); ++it) {
+                if (*it) {
+                    std::cout << "Cleaning up client with socket: " << (*it)->GetSocket() << std::endl;
+                    sockets.push_back((*it)->GetSocket());
+                    if ((*it)->GetSocket() != -1)
+                        close((*it)->GetSocket());
+                    (*it)->StopClient();
+                }
+            }
+            for (size_t i = 0; i < sockets.size(); ++i) {
+                DeleteClient(sockets[i], *staticServer);
+            }
+        }
+        keepRunning = false;
+    }
+}
+
 
 Client* Server::FindClient(int clientSocket)
 {
@@ -138,7 +159,6 @@ void StartServer(Server& server)
 {
     staticServer = &server;
     signal(SIGINT, signalHandler);
-
 	int opt = 1;
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == -1)
@@ -184,21 +204,17 @@ void StartServer(Server& server)
     
     char buffer[BUFFER_SIZE];
 
-    while (true)
+    while (keepRunning)
     {
         int poll_count = poll(fds, nfds, 100); // Wait for an event
         if (poll_count < 0)
         {
-            perror("Poll failed");
-            for (int i = 1; i < nfds; i++)
-            {
-                if (fds[i].fd != -1)
-                {
-                    close(fds[i].fd);
-                    fds[i].fd = -1;
-                }
+            if (errno == EINTR)
+                break;
+            else {
+                perror("Poll failed");
+                break;
             }
-            break;
         }
 
         if (fds[0].revents & POLLIN)
@@ -207,7 +223,6 @@ void StartServer(Server& server)
             socklen_t client_len = sizeof(client_address);
             int clientSocket = accept(serverSocket, (struct sockaddr *)&client_address, &client_len);
             server.AddClient(clientSocket);
-            Client newClient;
             if (clientSocket < 0)
             {
                 perror("Accept failed");
@@ -263,13 +278,15 @@ void StartServer(Server& server)
                 {
                     std::cout << "Client disconnected.\n";
 					DeleteClient(clientSocket, server);
-                    close(clientSocket);
+                    if (clientSocket != -1)
+                        close(clientSocket);
                     fds[i].fd = -1;
                 }
                 else
                 {
                     perror("Recv failed");
-                    close(clientSocket);
+                    if (clientSocket != -1)
+                        close(clientSocket);
                     fds[i].fd = -1;
                 }
             }
