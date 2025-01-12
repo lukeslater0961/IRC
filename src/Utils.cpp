@@ -65,10 +65,10 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 		BroadcastToUser(tokens, server, client);
 	else
 	{
-		std::string msg = ":" + client->getNickname() + " PRIVMSG " + channel->getName() + " :";
+		std::string msg = ":" + client->getNickname() + " PRIVMSG " + tokens[1] + " ";
 
-		for (size_t i = 1; i < tokens.size(); ++i) { 
-			if (i > 1)
+		for (size_t i = 2; i < tokens.size(); ++i) { 
+			if (i > 2)
 				msg += " ";
 			msg += tokens[i];
 		}

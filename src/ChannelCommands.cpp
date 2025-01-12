@@ -40,20 +40,16 @@ int	HandleErrors(Client *client, std::string channelName, Server *server, std::v
         return 1;
     }
 
-    if (!channel->GetKey().empty() && tokens.size() < 3)
-    {
-        if (tokens.size() < 3 || tokens[2] != channel->GetKey()) {
+    if (!channel->GetKey().empty()) {
+        if (tokens.size() < 3) {
             SendErrorMsg("475", channelName + " :Cannot join channel (+k)", client);
-			return 1;
+            return 1;
         }
-    }else if (tokens.size() == 3)
-	{
-		if (tokens[2] != channel->GetKey())
-		{
-			SendErrorMsg("475", channelName + " :Invalid passkey", client);
-			return 1;
-		}
-	}
+        if (tokens[2] != channel->GetKey()) {
+            SendErrorMsg("475", channelName + " :Invalid passkey", client);
+            return 1;
+        }
+    }
 
     if (channel->HasMember(client->getNickname())) {
         std::string errorMessage = ":localhost 443 " + client->getNickname() + " " + channelName + " :is already on channel";

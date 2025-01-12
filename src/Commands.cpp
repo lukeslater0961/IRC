@@ -71,7 +71,7 @@ void CheckNickname(std::vector<std::string> tokens, Client *client, Server *serv
 	nick = tokens[1];
 	for (size_t i = 0; i < sizeof(invChars)/sizeof(invChars[0]); ++i)
 	{
-		if (!tokens[1].find(invChars[i]))		
+		if (nick.find(invChars[i]) != std::string::npos)        
 		{
 			SendErrorMsg(":localhost 432 " + nick, NON_NICK, client);
 			return;
@@ -80,14 +80,25 @@ void CheckNickname(std::vector<std::string> tokens, Client *client, Server *serv
 
 	for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
 	{
-		if ((*it)->getNickname() == nick)
+		if ((*it)->getNickname() == nick && *it != client)  // Allow user to change to their current nickname
 		{
-            SendMsg(client, ":localhost 433 * " + nick + " " + NICK_USE);
+			SendMsg(client, ":localhost 433 * " + nick + " " + NICK_USE);
 			return;
 		}
 	}
+
+	std::string oldNick = client->getNickname();
 	client->setNickname(nick);
-    SendMsg(client, ":localhost 001 " + client->getNickname() + " :Registered nickname " + client->getNickname());
+	if (!oldNick.empty())
+	{
+		// Inform about nickname change
+		std::string changeMsg = ":" + oldNick + " NICK " + nick + "\n";
+		SendMsg(client, changeMsg);
+	}
+	else
+	{
+		SendMsg(client, ":localhost 001 " + client->getNickname() + " :Registered nickname " + client->getNickname());
+	}
 }
 
 
