@@ -115,8 +115,13 @@ void DoCommands(std::string buffer, Client *client, Server *server)
 			if (!std::strcmp(tokens2.c_str(), unloggedcommands[j].c_str()))
 				break;
 		}
-        if ((client->GetPassword() && client->getNickname().size() > 1 && client->getUsername().size() > 1) && j == sizeof(unloggedcommands) / sizeof(unloggedcommands[0]))
+        if (j == sizeof(unloggedcommands) / sizeof(unloggedcommands[0]))
         {
+            if (!client->GetPassword() || client->getNickname().size() < 1 || client->getUsername().size() < 1)
+            {
+                SendErrorMsg("451", "You have not registered", client);
+                return;
+            }
             for (; i < sizeof(commandslogged) / sizeof(commandslogged[0]); i++)
             {
                 if (!std::strcmp(tokens2.c_str(), commandslogged[i].c_str()))
@@ -145,7 +150,8 @@ void DoCommands(std::string buffer, Client *client, Server *server)
                 break;
             case 5:
                if (tokens.size() != 2) {
-                    SendErrorMsg("461", "JOIN :Not enough parameters", client);
+                    std::string errMessage = ":localhost 461 " + client->getNickname() + " JOIN:Not enough parameters";
+                    SendMsg(client, errMessage);
                     break;
                 }
 	    		JoinChannel(tokens, server, client);
@@ -172,9 +178,13 @@ void DoCommands(std::string buffer, Client *client, Server *server)
 				}
                 InviteCommand(*server, tokens[2], client, tokens[1]);
                 break;
-			default:
-				if (!client->inChannel)
-					SendErrorMsg("No channel joined. " , "Try /join #<channel>\n", client);
+            default:
+                if (!client->inChannel)
+                {
+                    std::string errMessage = ":localhost 403 " + client->getNickname() + " :No channel joined. Try /join #<channel>";
+                    SendMsg(client, errMessage);
+                    }
+
 				break;
 		}
 	}
