@@ -152,25 +152,24 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
 	std::string errorMessage;
 
 	if (!targetClient) {
-		std::cout << "ABCDEFGHIJKLMNOPQRSTUVWXYZ" << std::endl;
 		errorMessage = ":localhost 401 " + target + " :No such nick/channel\n";
 		SendMsg(operatorClient, errorMessage);
 		return;
 	}
-    if (!channel) {
+	else if (!channel) {
 
 		errorMessage = ":localhost 403 " + channelName + " :No such channel\n";
 		SendMsg(operatorClient, errorMessage);
         return;
     }
 
-    if (!channel->HasOperator(operatorClient->getNickname())) {
+	else if (!channel->HasOperator(operatorClient->getNickname())) {
 		errorMessage = ":localhost 482 " + operatorClient->getNickname() + " " + channelName + " :You're not channel operator\n";
 		SendMsg(operatorClient, errorMessage);
         return;
     }
 
-    if (channel->HasMember(target)) {
+	else if (channel->HasMember(target)) {
 		errorMessage = ":localhost 443 " + target + " " + channelName + " :is already on channel\n";
 		SendMsg(operatorClient, errorMessage);
         return;

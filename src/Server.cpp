@@ -131,6 +131,7 @@ int SetupServer(char **argv)
 
 void Server::CreateChannel(const std::string &name)
 {
+
    if (_channels.find(name) == _channels.end()) {
         _channels[name] = new Channel(name);
         std::cout << "Channel " << name << " created." << std::endl;
@@ -140,6 +141,7 @@ void Server::CreateChannel(const std::string &name)
 Channel* Server::GetChannel(const std::string &name)
 {
   std::map<std::string, Channel*>::iterator it = _channels.find(name);
+
     if (it != _channels.end())
         return it->second;
     return NULL;

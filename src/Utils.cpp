@@ -144,7 +144,7 @@ void DoCommands(std::string buffer, Client *client, Server *server)
                 } 
                 break;
             case 5:
-               if (tokens.size() < 2) {
+               if (tokens.size() != 2) {
                     SendErrorMsg("461", "JOIN :Not enough parameters", client);
                     break;
                 }
@@ -156,6 +156,11 @@ void DoCommands(std::string buffer, Client *client, Server *server)
             case 7:
                 break;
             case 8:
+				if (tokens.size() != 4)
+				{
+					SendErrorMsg("461", "MODE :Not enough parameters", client);
+					break;
+				}
                 ModeCommand(*server, client, tokens);
                 break;
             case 9:
@@ -165,6 +170,11 @@ void DoCommands(std::string buffer, Client *client, Server *server)
                 KickCommand(*server, tokens[1], client, tokens[2]);
                 break;
             case 11:
+				if (tokens.size() != 3)
+				{
+					SendErrorMsg("461", "INVITE :Not enough parameters", client);
+					break;
+				}
                 InviteCommand(*server, tokens[2], client, tokens[1]);
                 break;
 			default:
