@@ -152,12 +152,13 @@ void InviteCommand(Server &server, const std::string &channelName, Client *opera
 	std::string errorMessage;
 
 	if (!targetClient) {
+		std::cout << "ABCDEFGHIJKLMNOPQRSTUVWXYZ" << std::endl;
 		errorMessage = ":localhost 401 " + target + " :No such nick/channel\n";
 		SendMsg(operatorClient, errorMessage);
 		return;
 	}
-
     if (!channel) {
+
 		errorMessage = ":localhost 403 " + channelName + " :No such channel\n";
 		SendMsg(operatorClient, errorMessage);
         return;
