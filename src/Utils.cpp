@@ -156,11 +156,6 @@ void DoCommands(std::string buffer, Client *client, Server *server)
             case 7:
                 break;
             case 8:
-				if (tokens.size() != 4)
-				{
-					SendErrorMsg("461", "MODE :Not enough parameters", client);
-					break;
-				}
                 ModeCommand(*server, client, tokens);
                 break;
             case 9:
