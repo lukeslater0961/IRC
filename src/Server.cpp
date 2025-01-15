@@ -82,7 +82,6 @@ void signalHandler(int signal)
                     sockets.push_back((*it)->GetSocket());
                     if ((*it)->GetSocket() != -1)
                         close((*it)->GetSocket());
-                    (*it)->StopClient();
                 }
             }
             for (size_t i = 0; i < sockets.size(); ++i) {
@@ -161,7 +160,7 @@ void Server::DeleteChannel(const std::string &name)
 void StartServer(Server& server) {
     InitializeServer(server);
     
-    struct pollfd fds[MAX_CLIENTS];
+    struct pollfd fds[MAX_CLIENTS + 1];
     int nfds = 1;
     
     SetupPoll(fds);
@@ -237,7 +236,7 @@ bool PollSockets(struct pollfd* fds, int nfds) {
 }
 
 void HandleNewConnection(struct pollfd* fds, int& nfds, Server& server) {
-    if (fds[0].revents & POLLIN) {
+    if (fds[0].revents & POLLIN && nfds < MAX_CLIENTS) {
         sockaddr_in client_address;
         socklen_t client_len = sizeof(client_address);
         int clientSocket = accept(serverSocket, (struct sockaddr*)&client_address, &client_len);
@@ -266,11 +265,10 @@ void ProcessClientSockets(struct pollfd* fds, int nfds, Server& server, char* bu
         if (fds[i].fd != -1 && fds[i].revents & POLLIN) {
             int clientSocket = fds[i].fd;
             int bytesReceived = recv(clientSocket, buffer, BUFFER_SIZE - 1, 0);
-
             if (bytesReceived > 0) {
                 HandleClientMessage(clientSocket, server, buffer, bytesReceived);
             } else {
-                HandleClientDisconnection(fds, i, clientSocket, server);
+                HandleClientDisconnection(fds, i, clientSocket, server, server.FindClient(clientSocket)->GetCurrentChannel());  
             }
         }
     }
@@ -300,10 +298,18 @@ void HandleClientMessage(int clientSocket, Server& server, char* buffer, int byt
     }
 }
 
-void HandleClientDisconnection(struct pollfd* fds, int index, int clientSocket, Server& server) {
+void HandleClientDisconnection(struct pollfd* fds, int index, int clientSocket, Server& server, std::string channelName) {
     std::cout << "Client disconnected.\n";
+    Client* client = server.FindClient(clientSocket);
+    if (client && !channelName.empty()) {
+        Channel* channel = server.GetChannel(channelName);
+        if (channel) {
+            channel->RemoveMember(client->getNickname());
+            std::string msg = ":" + client->getNickname() + " QUIT\n";
+            channel->broadcast(msg, NULL);
+        }
+    }
     DeleteClient(clientSocket, server);
-
     if (clientSocket != -1) {
         close(clientSocket);
     }

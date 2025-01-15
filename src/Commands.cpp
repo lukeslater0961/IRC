@@ -93,7 +93,22 @@ void CheckNickname(std::vector<std::string> tokens, Client *client, Server *serv
 	{
 		// Inform about nickname change
 		std::string changeMsg = ":" + oldNick + " NICK " + nick + "\n";
-		SendMsg(client, changeMsg);
+		for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
+		{
+			SendMsg(*it, changeMsg);
+			client->setNickname(nick);
+			Channel *channel = server->GetChannel(client->GetCurrentChannel());
+			if (channel->HasOperator(oldNick))
+			{
+				channel->RemoveOperator(oldNick);
+				channel->AddOperator(nick);
+			}
+			if (channel->HasMember(oldNick))
+			{
+				channel->RemoveMember(oldNick);
+				channel->AddMember(client);
+			}
+		}
 	}
 	else
 	{

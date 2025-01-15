@@ -16,7 +16,6 @@
 
 #define BUFFER_SIZE 1024
 #define MAX_CLIENTS 100
-
   
 
 int		ErrorMngment(std::string msg);

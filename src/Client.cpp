@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Client.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: tsoloher <tsoloher@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/11 14:21:18 by tsoloher          #+#    #+#             */
-/*   Updated: 2025/01/10 14:01:56 by tsoloher         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../includes/Client.hpp"
 
 
@@ -24,6 +12,7 @@ Client::~Client()
 {
     if (_socket != -1)
         close(_socket);
+    std::cout << "client destroyed" << std::endl;
 }
 
 void Client::StopClient()

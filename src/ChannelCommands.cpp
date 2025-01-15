@@ -56,6 +56,11 @@ int	HandleErrors(Client *client, std::string channelName, Server *server, std::v
         SendMsg(client, errorMessage);
         return 1;
     }
+
+    if (channel->getUserLimit() != -1 && channel->GetMemberList().size() >= static_cast<size_t>(channel->getUserLimit())) {
+        SendErrorMsg("471", channelName + " :Cannot join channel (+l)", client);
+        return 1;
+    }
 	return 0;
 }
 

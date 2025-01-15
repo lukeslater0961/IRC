@@ -88,6 +88,14 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 
 }
 
+void Quit(std::string channelName, Client *client, Server *server)
+{
+    Channel *channel = server->GetChannel(channelName);
+    if (channel->HasMember(client->getNickname()))
+        channel->RemoveMember(client->getNickname());
+    std::string msg = ":" + client->getNickname() + " QUIT\n";
+    channel->broadcast(msg, NULL);
+}
 
 void DoCommands(std::string buffer, Client *client, Server *server)
 {
@@ -141,7 +149,7 @@ void DoCommands(std::string buffer, Client *client, Server *server)
 				SetUsername(tokens, client);
 				break;
             case 3:
-                client->StopClient();
+                Quit(client->GetCurrentChannel(), client, server);
                 break;
             case 4:
                 if (tokens.size() > 1 && tokens[1] == "LS") {

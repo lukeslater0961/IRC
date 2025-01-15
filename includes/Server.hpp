@@ -40,7 +40,7 @@ bool PollSockets(struct pollfd* fds, int nfds);
 void HandleNewConnection(struct pollfd* fds, int& nfds, Server& server);
 void ProcessClientSockets(struct pollfd* fds, int nfds, Server& server, char* buffer);
 void HandleClientMessage(int clientSocket, Server& server, char* buffer, int bytesReceived);
-void HandleClientDisconnection(struct pollfd* fds, int index, int clientSocket, Server& server);
+void HandleClientDisconnection(struct pollfd* fds, int index, int clientSocket, Server& server, std::string channelName);
 void InitializeServer(Server& server);
 #endif
 

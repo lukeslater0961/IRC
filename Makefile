@@ -11,8 +11,6 @@ SRCS = src/main.cpp \
 		src/ChannelCommands.cpp\
 		src/Commands/ModeCommand.cpp
 
-
-
 OBJS = $(SRCS:.cpp=.o)
 
 #_____Define colors_____

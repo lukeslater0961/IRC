@@ -65,7 +65,6 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
         SendModeResponse(operatorClient, ":server 403 " + tokens[1] + " :No such channel\r\n");
         return;
     }
-
     if (!channel->HasOperator(operatorClient->getNickname())) {
         errorMessage = ":localhost 482 " + operatorClient->getNickname() + " " + tokens[1] + " :You're not channel operator\r\n";
         SendMsg(operatorClient, errorMessage);
@@ -115,7 +114,13 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
                 return;
             }
             if (addMode && channel->HasMember(arguments[argIndex]))
+            {
                 channel->AddOperator(arguments[argIndex]);
+                std::string response = ":server MODE " + tokens[1] + " " + tokens[2];
+                for (size_t i = 3; i < tokens.size(); ++i)
+                    response += " " + tokens[i];
+                channel->broadcast(response, NULL);
+            }
             else
                 channel->RemoveOperator(arguments[argIndex]);
             ++argIndex;
