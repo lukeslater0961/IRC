@@ -48,23 +48,23 @@ void	BroadcastToUser(std::vector<std::string> tokens, Server *server, Client *cl
 	}
 }
 
-void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server *server) {
+void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server *server)
+{
     Channel *channel = server->GetChannel(client->GetCurrentChannel());
-    if (!channel) {
-        std::cerr << "Error: Client is not in a valid channel." << std::endl;
-        return;
-    }
 
-    std::map<std::string, Client *> members = channel->GetMembers();
-    if (members.empty()) {
-        std::cerr << "Error: Channel has no members." << std::endl;
-        return;
-    }
-	
 	if (tokens[1][0] != '#')
 		BroadcastToUser(tokens, server, client);
 	else
 	{
+        if (!channel) {
+            std::cerr << "Error: Client is not in a valid channel." << std::endl;
+            return;
+        }
+        std::map<std::string, Client *> members = channel->GetMembers();
+        if (members.empty()) {
+            std::cerr << "Error: Channel has no members." << std::endl;
+            return;
+        }
 		std::string msg = ":" + client->getNickname() + " PRIVMSG " + tokens[1] + " ";
 
 		for (size_t i = 2; i < tokens.size(); ++i) { 
@@ -72,7 +72,6 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 				msg += " ";
 			msg += tokens[i];
 		}
-
 		msg += "\r\n"; // Append IRC-compliant line ending
 
 		for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it) {
@@ -85,7 +84,7 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 		// Debug: Log the final broadcasted message
 		std::cout << "Broadcasted message (excluding sender): " << msg << std::endl;
 	}
-
+}
 }
 
 void Quit(std::string channelName, Client *client, Server *server)

@@ -157,6 +157,7 @@ void KickCommand(Server &server, const std::string &channelName, Client *operato
     channel->broadcast(msg, NULL);
 	SendMsg(client, msg);
 	client->inChannel = false;
+	client->SetCurrentChannel("");
 }
 
 
