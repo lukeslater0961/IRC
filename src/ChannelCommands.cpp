@@ -69,7 +69,9 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
 	Channel *channel;
 	std::string joinMessage;
 
-    if (tokens.size() < 2) {
+
+    if (tokens.size() < 2 || tokens.size() > 3)
+    {
         SendErrorMsg("461", "JOIN :Not enough parameters", client);
         return;
     }

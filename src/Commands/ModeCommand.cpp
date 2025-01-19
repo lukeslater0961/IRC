@@ -44,8 +44,6 @@ int ParseValues(const std::vector<std::string>& tokens, std::string& modes, std:
     return 0;
 }
 
-
-
 void SendModeResponse(Client* client, const std::string& response)
 {
     if (send(client->GetSocket(), response.c_str(), response.length(), 0) == -1)
@@ -89,7 +87,6 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
             addMode = false;
             continue;
         }
-
         if (mode == 'i')
             channel->setInviteOnly(addMode);
         else if (mode == 't')
@@ -122,7 +119,14 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
                 channel->broadcast(response, NULL);
             }
             else
+            {
+                std::string response = ":server MODE " + tokens[1] + " " + tokens[2];
+                for (size_t i = 3; i < tokens.size(); ++i)
+                    response += " " + tokens[i];
+                response += "\r\n";
+                channel->broadcast(response, NULL);
                 channel->RemoveOperator(arguments[argIndex]);
+            }
             ++argIndex;
         } else if (mode == 'l') {
             if (addMode) {
@@ -141,27 +145,6 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
 			SendModeResponse(operatorClient, ":server 472 " + std::string(1, mode) + " :Invalid mode\r\n");
 			return;
 		}
-    }
-    if (mode == 'o' && addMode) {
-        if (channel->HasMember(arguments[argIndex - 1])) {
-            std::string response = ":server MODE " + tokens[1] + " " + tokens[2];
-            for (size_t i = 3; i < tokens.size(); ++i)
-                response += " " + tokens[i];
-            response += "\r\n";
-            SendModeResponse(operatorClient, response);
-        }
-        else 
-        {
-            std::string errorMessage = ":localhost 441 " + operatorClient->getNickname() + " " + channel->getName() + " " + arguments[argIndex - 1] + " :They aren't on that channel\r\n";
-            SendMsg(operatorClient, errorMessage);
-        }
-		    SendMsg(operatorClient, errorMessage);
-    } else {
-        std::string response = ":server MODE " + tokens[1] + " " + tokens[2];
-        for (size_t i = 3; i < tokens.size(); ++i)
-            response += " " + tokens[i];
-        response += "\r\n";
-        SendModeResponse(operatorClient, response);
     }
 }
 

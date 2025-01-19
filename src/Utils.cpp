@@ -85,7 +85,6 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 		std::cout << "Broadcasted message (excluding sender): " << msg << std::endl;
 	}
 }
-}
 
 void Quit(std::string channelName, Client *client, Server *server)
 {
@@ -156,11 +155,6 @@ void DoCommands(std::string buffer, Client *client, Server *server)
                 } 
                 break;
             case 5:
-               if (tokens.size() != 2) {
-                    std::string errMessage = ":localhost 461 " + client->getNickname() + " JOIN:Not enough parameters";
-                    SendMsg(client, errMessage);
-                    break;
-                }
 	    		JoinChannel(tokens, server, client);
                 break;
             case 6:
