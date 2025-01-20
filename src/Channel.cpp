@@ -60,7 +60,7 @@ void Channel::broadcast(const std::string &message, Client *client)
 {
     for (std::map<std::string, Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
     {
-        if (it->second != client )
+        if (it->second != client)
             SendMsg(it->second, message);
     }
 }

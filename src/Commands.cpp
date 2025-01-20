@@ -91,22 +91,32 @@ void CheckNickname(std::vector<std::string> tokens, Client *client, Server *serv
 	client->setNickname(nick);
 	if (!oldNick.empty())
 	{
-		// Inform about nickname change
+
 		std::string changeMsg = ":" + oldNick + " NICK " + nick + "\n";
-		for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
+		// Inform about nickname change
+		if (client->GetCurrentChannel().empty())
 		{
-			SendMsg(*it, changeMsg);
+			SendMsg(client, changeMsg);
 			client->setNickname(nick);
-			Channel *channel = server->GetChannel(client->GetCurrentChannel());
-			if (channel->HasOperator(oldNick))
+
+		}
+		else
+		{
+			for (std::vector<Client *>::iterator it = server->client.begin(); it != server->client.end(); it++)
 			{
-				channel->RemoveOperator(oldNick);
-				channel->AddOperator(nick);
-			}
-			if (channel->HasMember(oldNick))
-			{
-				channel->RemoveMember(oldNick);
-				channel->AddMember(client);
+				SendMsg(*it, changeMsg);
+				client->setNickname(nick);
+				Channel *channel = server->GetChannel(client->GetCurrentChannel());
+				if (channel->HasOperator(oldNick))
+				{
+					channel->RemoveOperator(oldNick);
+					channel->AddOperator(nick);
+				}
+				if (channel->HasMember(oldNick))
+				{
+					channel->RemoveMember(oldNick);
+					channel->AddMember(client);
+				}
 			}
 		}
 	}
@@ -158,6 +168,7 @@ void KickCommand(Server &server, const std::string &channelName, Client *operato
 	SendMsg(client, msg);
 	client->inChannel = false;
 	client->SetCurrentChannel("");
+	channel->RemoveOperator(targetNickname);
 }
 
 
@@ -204,7 +215,7 @@ void TopicCommand(Server &server, const std::string &channelName, Client *operat
      Channel *channel = server.GetChannel(channelName);
     std::string newTopic = "";
 	std::string errorMessage;
-    
+
 	if (!channel) {
 		errorMessage = ":localhost 403 " + channelName + " :No such channel\n";
 		SendMsg(operatorClient, errorMessage);

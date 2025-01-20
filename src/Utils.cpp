@@ -88,11 +88,14 @@ void BroadcastToChannel(std::vector<std::string> tokens, Client *client, Server 
 
 void Quit(std::string channelName, Client *client, Server *server)
 {
+    std::cout << "Client " << client->getNickname() << " has quit." << std::endl;
     Channel *channel = server->GetChannel(channelName);
-    if (channel->HasMember(client->getNickname()))
+    if (!client->GetCurrentChannel().empty() && channel->HasMember(client->getNickname()))
+    {
         channel->RemoveMember(client->getNickname());
-    std::string msg = ":" + client->getNickname() + " QUIT\n";
-    channel->broadcast(msg, NULL);
+        std::string msg = ":" + client->getNickname() + " QUIT\n";
+        channel->broadcast(msg, NULL);
+    }
 }
 
 void DoCommands(std::string buffer, Client *client, Server *server)
@@ -166,9 +169,19 @@ void DoCommands(std::string buffer, Client *client, Server *server)
                 ModeCommand(*server, client, tokens);
                 break;
             case 9:
+                if (tokens.size() < 3)
+                {
+                    SendMsg(client, "461 TOPIC :Not enough parameters");
+                    break;
+                }
                 TopicCommand(*server, tokens[1], client, tokens);
                 break;
             case 10:
+                if(tokens.size() != 3)
+                {
+                    SendErrorMsg("461", "KICK :Not enough parameters", client);
+                    break;
+                }
                 KickCommand(*server, tokens[1], client, tokens[2]);
                 break;
             case 11:
@@ -177,6 +190,8 @@ void DoCommands(std::string buffer, Client *client, Server *server)
 					SendErrorMsg("461", "INVITE :Not enough parameters", client);
 					break;
 				}
+                if (tokens[2][0] != '#')
+                    break;
                 InviteCommand(*server, tokens[2], client, tokens[1]);
                 break;
             default:

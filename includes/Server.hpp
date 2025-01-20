@@ -34,6 +34,7 @@ class Server{
 int		SetupServer(char **argv);
 void	StartServer(Server &server);
 void	ParseMessage(std::string buffer, Server *server, int clientSocket);
+void	DeleteClient(int clientSocket, Server &server);
 
 void SetupPoll(struct pollfd* fds);
 bool PollSockets(struct pollfd* fds, int nfds);
