@@ -16,7 +16,6 @@ int	CheckModeType(std::string tokens)
 		return (0);
 }
 
-
 int ParseValues(const std::vector<std::string>& tokens, std::string& modes, std::vector<std::string>& arguments)
 {
     if (tokens.size() < 3) {
@@ -50,6 +49,33 @@ void SendModeResponse(Client* client, const std::string& response)
         std::cerr << "Error: Failed to send MODE response to client " << client->getNickname() << std::endl;
 }
 
+void oMode(int addMode, Channel *channel, int argIndex, std::vector<std::string> tokens, std::vector<std::string> arguments, Client *operatorClient)
+{
+    if (addMode && channel->HasMember(arguments[argIndex]))
+    {
+        channel->AddOperator(arguments[argIndex]);
+        std::string response = ":server MODE " + tokens[1] + " " + tokens[2];
+        for (size_t i = 3; i < tokens.size(); ++i)
+            response += " " + tokens[i];
+        channel->broadcast(response, NULL);
+    }
+    else if (addMode && !channel->HasMember(arguments[argIndex]))
+    {
+        std::string errorMessage = ":localhost 696 " + operatorClient->getNickname() +
+                    " " + channel->getName() + " o * :member not in channel";
+        channel->broadcast(errorMessage, NULL);
+        return;
+    }
+    else if (!addMode)
+    {
+        std::string response = ":server MODE " + tokens[1] + " " + tokens[2];
+        for (size_t i = 3; i < tokens.size(); ++i)
+            response += " " + tokens[i];
+        response += "\r\n";
+        channel->broadcast(response, NULL);
+        channel->RemoveOperator(arguments[argIndex]);
+    }
+}
 
 void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string> tokens)
 {
@@ -64,7 +90,7 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
         return;
     }
     if (!channel->HasOperator(operatorClient->getNickname())) {
-        errorMessage = ":localhost 482 " + operatorClient->getNickname() + " " + tokens[1] + " :You're not channel operator\r\n";
+        errorMessage = ":localhost " + operatorClient->getNickname() + " " + tokens[1] + " :You're not channel operator\r\n";
         SendMsg(operatorClient, errorMessage);
         return;
     }
@@ -88,9 +114,17 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
             continue;
         }
         if (mode == 'i')
+        {
+            std::string confirmationMessage = ":server MODE " + tokens[1] + " " + tokens[2];
+            channel->broadcast(confirmationMessage, NULL);
             channel->setInviteOnly(addMode);
+        }
         else if (mode == 't')
+        {
+            std::string confirmationMessage = ":server MODE " + tokens[1] + " " + tokens[2];
+            channel->broadcast(confirmationMessage, NULL);
             channel->setTopicRestriction(addMode);
+        }
         else if (mode == 'k') {
             if (addMode) {
                 if (argIndex >= arguments.size()) {
@@ -99,10 +133,16 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
 					SendMsg(operatorClient, errorMessage);
                     return;
                 }
+                std::string confirmationMessage = ":server MODE " + tokens[1] + " " + tokens[2] + " " + tokens[3];
+                channel->broadcast(confirmationMessage, NULL);
                 channel->SetKey(arguments[argIndex]);
                 ++argIndex;
             } else
+            {
+                std::string confirmationMessage = ":server MODE " + tokens[1] + " " + tokens[2];
+                channel->broadcast(confirmationMessage, NULL);
                 channel->clearKey();
+            }
         } else if (mode == 'o') {
             if (argIndex >= arguments.size()) {
                	std::string errorMessage = ":localhost 696 " + operatorClient->getNickname() +
@@ -110,41 +150,29 @@ void ModeCommand(Server &server, Client *operatorClient, std::vector<std::string
 					SendMsg(operatorClient, errorMessage);
                 return;
             }
-            if (addMode && channel->HasMember(arguments[argIndex]))
-            {
-                channel->AddOperator(arguments[argIndex]);
-                std::string response = ":server MODE " + tokens[1] + " " + tokens[2];
-                for (size_t i = 3; i < tokens.size(); ++i)
-                    response += " " + tokens[i];
-                channel->broadcast(response, NULL);
-            }
-            else
-            {
-                std::string response = ":server MODE " + tokens[1] + " " + tokens[2];
-                for (size_t i = 3; i < tokens.size(); ++i)
-                    response += " " + tokens[i];
-                response += "\r\n";
-                channel->broadcast(response, NULL);
-                channel->RemoveOperator(arguments[argIndex]);
-            }
+            oMode(addMode, channel, argIndex, tokens, arguments, operatorClient);
             ++argIndex;
         } else if (mode == 'l') {
             if (addMode) {
                 if (argIndex >= arguments.size()) {
                     std::string errorMessage = ":localhost 696 " + operatorClient->getNickname() +
                                 " " + channel->getName() + " l * :You must specify a parameter for the key mode. Syntax: <limit>.";
-					SendMsg(operatorClient, errorMessage);                    return;
+					SendMsg(operatorClient, errorMessage);             
+                    return;
                 }
+                std::string confirmationMessage = ":server MODE " + tokens[1] + " " + tokens[2] + " " + tokens[3];
+                channel->broadcast(confirmationMessage, NULL);
                 int limit = std::atoi(arguments[argIndex].c_str());
                 channel->setUserLimit(limit);
                 ++argIndex;
             } else
+            {
+                std::string confirmationMessage = ":server MODE " + tokens[1] + " " + tokens[2] + " ";
+                channel->broadcast(confirmationMessage, NULL);
                 channel->clearUserLimit();
+            }
         } else
-		{
-			SendModeResponse(operatorClient, ":server 472 " + std::string(1, mode) + " :Invalid mode\r\n");
 			return;
-		}
     }
 }
 

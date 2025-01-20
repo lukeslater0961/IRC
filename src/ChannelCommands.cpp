@@ -32,7 +32,7 @@ int	HandleErrors(Client *client, std::string channelName, Server *server, std::v
     if (!channel) {
         server->CreateChannel(channelName);
         channel = server->GetChannel(channelName);
-        std::cout << "Channel " << channelName << " created." << std::endl;
+        return (0);
     }
 
     if (channel->isInviteOnly() == 1 && !channel->isInvited(client->getNickname())) {
@@ -57,7 +57,7 @@ int	HandleErrors(Client *client, std::string channelName, Server *server, std::v
         return 1;
     }
 
-    if (channel->getUserLimit() != -1 && channel->GetMemberList().size() >= static_cast<size_t>(channel->getUserLimit())) {
+    if (channel->getUserLimit() != -1 && channel->GetMembers().size() >= static_cast<size_t>(channel->getUserLimit())) {
         SendErrorMsg("471", channelName + " :Cannot join channel (+l)", client);
         return 1;
     }
@@ -68,7 +68,6 @@ void JoinChannel(std::vector<std::string> tokens, Server *server, Client *client
 {
 	Channel *channel;
 	std::string joinMessage;
-
 
     if (tokens.size() < 2 || tokens.size() > 3)
     {
